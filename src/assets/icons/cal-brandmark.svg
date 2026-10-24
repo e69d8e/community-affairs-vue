@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" width="200" height="48" fill="none">
+  <!-- 32x32 Icon Mark -->
+  <g transform="translate(4, 8)">
+    <rect width="32" height="32" rx="8" fill="#111111"/>
+    <path d="M16 8L8 14H11V23C11 23.55 11.45 24 12 24H20C20.55 24 21 23.55 21 23V14H24L16 8Z" fill="#FFFFFF"/>
+    <rect x="13" y="16" width="2.5" height="2.5" rx="0.5" fill="#111111"/>
+    <rect x="16.5" y="16" width="2.5" height="2.5" rx="0.5" fill="#111111"/>
+    <rect x="13" y="19.5" width="2.5" height="2.5" rx="0.5" fill="#111111"/>
+    <rect x="16.5" y="19.5" width="2.5" height="2.5" rx="0.5" fill="#10B981"/>
+  </g>
+  
+  <!-- Cal Sans Geometric Wordmark: "community." -->
+  <text x="44" y="29" font-family="Cal Sans, Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="600" letter-spacing="-0.5" fill="#111111">community<tspan fill="#10B981">.</tspan></text>
+  
+  <!-- Cal.com badge-pill: "affairs" -->
+  <rect x="146" y="16" width="46" height="18" rx="9" fill="#F5F5F5"/>
+  <text x="169" y="28.5" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="500" fill="#6B7280">affairs</text>
+</svg>

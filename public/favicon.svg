@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Cal.com style: #111111 rounded.xl (16px) squircle -->
+  <rect width="64" height="64" rx="16" fill="#111111"/>
+  
+  <!-- Architectural gable roof -->
+  <path d="M32 17L18 28.5H23V45C23 46.1046 23.8954 47 25 47H39C40.1046 47 41 46.1046 41 45V28.5H46L32 17Z" fill="#FFFFFF"/>
+  
+  <!-- 2x2 Affairs & Community Grid Cutouts (Internal Negative Space) -->
+  <rect x="26.5" y="31.5" width="4.5" height="4.5" rx="1" fill="#111111"/>
+  <rect x="33" y="31.5" width="4.5" height="4.5" rx="1" fill="#111111"/>
+  <rect x="26.5" y="38" width="4.5" height="4.5" rx="1" fill="#111111"/>
+  
+  <!-- Cal.com design system Success Emerald pulse (#10B981) -->
+  <rect x="33" y="38" width="4.5" height="4.5" rx="1" fill="#10B981"/>
+</svg>

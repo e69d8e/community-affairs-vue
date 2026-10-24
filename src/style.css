@@ -1,0 +1,806 @@
+/* ==========================================================================
+   Cal.com Modern SaaS Design System Tokens & Global Base Styles
+   Based on DESIGN-cal.md Specification
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/cal-sans@1.0.1/dist/cal-sans.css');
+
+:root {
+  /* ---------------------------------------------------------
+     1. Brand & Surface Colors (Cal.com Palette)
+     --------------------------------------------------------- */
+  --cal-primary: #111111;
+  --cal-primary-active: #242424;
+  --cal-primary-disabled: #e5e7eb;
+  --cal-ink: #111111;
+  --cal-body: #374151;
+  --cal-muted: #6b7280;
+  --cal-muted-soft: #898989;
+  --cal-hairline: #e5e7eb;
+  --cal-hairline-soft: #f3f4f6;
+  --cal-canvas: #ffffff;
+  --cal-surface-soft: #f8f9fa;
+  --cal-surface-card: #f5f5f5;
+  --cal-surface-strong: #e5e7eb;
+  --cal-surface-dark: #101010;
+  --cal-surface-dark-elevated: #1a1a1a;
+  --cal-on-primary: #ffffff;
+  --cal-on-dark: #ffffff;
+  --cal-on-dark-soft: #a1a1aa;
+  --cal-brand-accent: #3b82f6;
+
+  /* ---------------------------------------------------------
+     2. Semantic Colors & Badge Pastels
+     --------------------------------------------------------- */
+  --cal-success: #10b981;
+  --cal-warning: #f59e0b;
+  --cal-error: #ef4444;
+  --cal-badge-orange: #fb923c;
+  --cal-badge-pink: #ec4899;
+  --cal-badge-violet: #8b5cf6;
+  --cal-badge-emerald: #34d399;
+
+  /* 兼容旧命名系统 */
+  --primary-color: var(--cal-primary);
+  --primary-hover: var(--cal-primary-active);
+  --primary-light: var(--cal-surface-card);
+  --warning-color: var(--cal-warning);
+  --danger-color: var(--cal-error);
+  --info-color: var(--cal-brand-accent);
+  --text-primary: var(--cal-ink);
+  --text-regular: var(--cal-body);
+  --text-secondary: var(--cal-muted);
+  --bg-page: var(--cal-canvas);
+  --bg-card: var(--cal-canvas);
+  --border-color: var(--cal-hairline);
+
+  /* ---------------------------------------------------------
+     3. Border Radius Scale
+     --------------------------------------------------------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
+
+  /* ---------------------------------------------------------
+     4. Spacing System
+     --------------------------------------------------------- */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --space-section: 96px;
+
+  /* ---------------------------------------------------------
+     5. Shadows & Elevation
+     --------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 12px 30px -4px rgba(0, 0, 0, 0.1);
+
+  /* ---------------------------------------------------------
+     6. Typography Stacks
+     --------------------------------------------------------- */
+  --font-display: "Cal Sans", "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* ---------------------------------------------------------
+     7. Element Plus Theme Overrides
+     --------------------------------------------------------- */
+  --el-color-primary: var(--cal-primary);
+  --el-color-primary-light-3: #333333;
+  --el-color-primary-light-5: #555555;
+  --el-color-primary-light-7: #888888;
+  --el-color-primary-light-8: #d4d4d8;
+  --el-color-primary-light-9: #f4f4f5;
+  --el-color-primary-dark-2: var(--cal-primary-active);
+
+  --el-color-success: var(--cal-success);
+  --el-color-warning: var(--cal-warning);
+  --el-color-danger: var(--cal-error);
+  --el-color-info: var(--cal-muted);
+
+  --el-border-radius-base: var(--radius-md);
+  --el-border-radius-small: var(--radius-sm);
+  --el-border-radius-round: var(--radius-pill);
+
+  --el-border-color: var(--cal-hairline);
+  --el-border-color-light: var(--cal-hairline-soft);
+  --el-border-color-lighter: #f8fafc;
+  --el-border-color-extra-light: #fafafa;
+
+  --el-text-color-primary: var(--cal-ink);
+  --el-text-color-regular: var(--cal-body);
+  --el-text-color-secondary: var(--cal-muted);
+  --el-text-color-placeholder: var(--cal-muted-soft);
+
+  --el-bg-color: var(--cal-canvas);
+  --el-bg-color-page: var(--cal-canvas);
+  --el-bg-color-overlay: var(--cal-canvas);
+  --el-font-family: var(--font-body);
+}
+
+/* ==========================================================================
+   Global Reset & Defaults
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--cal-body);
+  background-color: var(--cal-canvas);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--cal-ink);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 统一轻质滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* ==========================================================================
+   Cal Typography Utility Classes
+   ========================================================================== */
+
+.cal-display-xl {
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  color: var(--cal-ink);
+}
+
+.cal-display-lg {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  color: var(--cal-ink);
+}
+
+.cal-display-md {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  color: var(--cal-ink);
+}
+
+.cal-display-sm {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--cal-ink);
+}
+
+.cal-title-lg {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  color: var(--cal-ink);
+}
+
+.cal-title-md {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--cal-ink);
+}
+
+.cal-title-sm {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--cal-ink);
+}
+
+/* ==========================================================================
+   Cal Signature Components & Containers
+   ========================================================================== */
+
+/* 1. nav-pill-group 胶囊交互群 */
+.cal-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--cal-surface-soft);
+  border-radius: var(--radius-pill);
+  padding: 5px;
+  border: 1px solid var(--cal-hairline-soft);
+}
+
+.cal-pill-item {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cal-muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-pill-item:hover {
+  color: var(--cal-ink);
+}
+
+.cal-pill-item.active {
+  background-color: var(--cal-canvas);
+  color: var(--cal-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* 2. feature-card 浅灰卡片表面 */
+.cal-feature-card {
+  background-color: var(--cal-surface-card);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.cal-feature-card:hover {
+  border-color: var(--cal-hairline);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 3. product-mockup-card 纯白细边框卡片 */
+.cal-mockup-card {
+  background-color: var(--cal-canvas);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--cal-hairline);
+  box-shadow: var(--shadow-card);
+}
+
+/* 4. hero-app-mockup-card 标志性 Hero 微缩产品框 */
+.cal-hero-mockup {
+  background-color: var(--cal-canvas);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--cal-hairline);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 5. 柔和 Pastel 徽章 */
+.cal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cal-badge-orange {
+  background-color: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+}
+
+.cal-badge-pink {
+  background-color: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fce7f3;
+}
+
+.cal-badge-violet {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ede9fe;
+}
+
+.cal-badge-emerald {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #d1fae5;
+}
+
+.cal-badge-gray {
+  background-color: var(--cal-surface-soft);
+  color: var(--cal-muted);
+  border: 1px solid var(--cal-hairline);
+}
+
+/* 布局工具类 */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================================
+   Element Plus Fine-Tuning for Cal.com Identity
+   ========================================================================== */
+
+/* 1. Buttons */
+.el-button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+}
+
+.el-button--primary:not(.is-link):not(.is-text) {
+  background-color: var(--cal-primary) !important;
+  border-color: var(--cal-primary) !important;
+  color: var(--cal-on-primary) !important;
+}
+
+.el-button--primary:not(.is-link):not(.is-text):hover,
+.el-button--primary:not(.is-link):not(.is-text):focus {
+  background-color: var(--cal-primary-active) !important;
+  border-color: var(--cal-primary-active) !important;
+  color: var(--cal-on-primary) !important;
+}
+
+.el-button--primary:not(.is-link):not(.is-text):active {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:hover {
+  background-color: var(--cal-primary-disabled) !important;
+  border-color: var(--cal-primary-disabled) !important;
+  color: var(--cal-muted) !important;
+}
+
+.el-button.is-link,
+.el-button.is-text {
+  padding: 4px 8px !important;
+  border-radius: var(--radius-sm);
+  height: auto;
+}
+
+.el-button.is-round {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+.el-button--primary.is-link,
+.el-button--primary.is-text {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: var(--cal-brand-accent) !important;
+}
+
+.el-button--primary.is-link:hover,
+.el-button--primary.is-text:hover {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  color: #2563eb !important;
+}
+
+/* Common utility spacing helpers */
+.ml-1 { margin-left: 4px; }
+.ml-2 { margin-left: 8px; }
+.ml-3 { margin-left: 12px; }
+.ml-4 { margin-left: 16px; }
+.mr-1 { margin-right: 4px; }
+.mr-2 { margin-right: 8px; }
+.mr-3 { margin-right: 12px; }
+.mr-4 { margin-right: 16px; }
+
+.el-button--default {
+  background-color: var(--cal-canvas);
+  border-color: var(--cal-hairline);
+  color: var(--cal-ink);
+}
+
+.el-button--default:hover {
+  background-color: var(--cal-surface-soft);
+  border-color: #d1d5db;
+  color: var(--cal-ink);
+}
+
+/* 2. Inputs & Selects */
+.el-input__wrapper,
+.el-select__wrapper {
+  background-color: var(--cal-canvas);
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 0 0 1px var(--cal-hairline) inset !important;
+  transition: box-shadow 0.2s ease;
+}
+
+.el-input__wrapper:hover,
+.el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px #cbd5e1 inset !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1.5px var(--cal-ink) inset !important;
+}
+
+.el-textarea__inner {
+  border-radius: var(--radius-md);
+  border-color: var(--cal-hairline);
+  font-family: var(--font-body);
+}
+
+.el-textarea__inner:focus {
+  border-color: var(--cal-ink);
+}
+
+/* 3. Dialogs & Modals */
+.el-dialog {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--cal-hairline);
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+.el-dialog__header {
+  padding: 20px 24px;
+  margin-right: 0;
+  border-bottom: 1px solid var(--cal-hairline-soft);
+}
+
+.el-dialog__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--cal-ink);
+}
+
+.el-dialog__body {
+  padding: 24px;
+}
+
+.el-dialog__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--cal-hairline-soft);
+}
+
+/* 4. Dropdown */
+.el-dropdown-menu {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--cal-hairline);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+}
+
+.el-dropdown-menu__item {
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  padding: 8px 12px;
+  color: var(--cal-body);
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--cal-surface-soft);
+  color: var(--cal-ink);
+}
+
+/* 5. Pagination */
+.el-pagination.is-background .el-pager li:not(.is-disabled).is-active {
+  background-color: var(--cal-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.el-pagination.is-background .el-pager li {
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+/* 6. Radio Button Group */
+.el-radio-button__inner {
+  border-color: var(--cal-hairline) !important;
+  color: var(--cal-muted);
+}
+
+.el-radio-button:first-child .el-radio-button__inner {
+  border-left: 1px solid var(--cal-hairline) !important;
+}
+
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background-color: var(--cal-primary) !important;
+  border-color: var(--cal-primary) !important;
+  color: #ffffff !important;
+  box-shadow: -1px 0 0 0 var(--cal-primary) !important;
+}
+
+/* 7. Tables */
+.el-table {
+  --el-table-header-bg-color: var(--cal-surface-soft);
+  --el-table-border-color: var(--cal-hairline);
+  color: var(--cal-body);
+  font-size: 13px;
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+  color: var(--cal-ink);
+}
+
+/* 8. Tabs */
+.el-tabs__item {
+  font-size: 14px;
+  color: var(--cal-muted);
+  font-weight: 500;
+}
+
+.el-tabs__item.is-active {
+  color: var(--cal-ink);
+  font-weight: 600;
+}
+
+.el-tabs__active-bar {
+  background-color: var(--cal-ink);
+  height: 2px;
+}
+
+/* 9. Empty State Wrapper */
+.empty-wrap {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0;
+}
+
+/* ==========================================================================
+   10. Global Mobile Adaptations & Responsive Overrides (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Typography Scaling for Mobile */
+  .cal-display-xl {
+    font-size: 32px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -1px !important;
+  }
+  .cal-display-lg {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.8px !important;
+  }
+  .cal-display-md {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+  .cal-display-sm {
+    font-size: 19px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Modals & Dialogs Auto-Adapt to Viewport */
+  .el-dialog {
+    width: 92vw !important;
+    max-width: 92vw !important;
+    margin: 16px auto !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  .el-dialog__header {
+    padding: 16px 18px !important;
+  }
+  .el-dialog__title {
+    font-size: 16px !important;
+  }
+  .el-dialog__body {
+    padding: 16px 18px !important;
+    max-height: 72vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .el-dialog__footer {
+    padding: 12px 18px !important;
+  }
+  .el-message-box {
+    width: 90vw !important;
+    max-width: 90vw !important;
+  }
+
+  /* Form & Interactive Elements */
+  .el-form--inline .el-form-item {
+    margin-right: 0 !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+  }
+  .el-form--inline .el-form-item__content {
+    width: 100% !important;
+  }
+  .el-form--inline .el-select,
+  .el-form--inline .el-input {
+    width: 100% !important;
+  }
+
+  /* Radio Button Groups Wrap Cleanly */
+  .el-radio-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .el-radio-button {
+    margin-bottom: 4px !important;
+  }
+  .el-radio-button__inner {
+    border-radius: var(--radius-sm) !important;
+    border-left: 1px solid var(--cal-hairline) !important;
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Tables Touch Scroll */
+  .el-table {
+    width: 100% !important;
+    font-size: 12px !important;
+  }
+  .el-table__body-wrapper,
+  .el-table__header-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Pagination Wrap on Mobile */
+  .el-pagination {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+  .el-pagination .el-pagination__total,
+  .el-pagination .el-pagination__jump {
+    display: none !important;
+  }
+
+  /* Card padding reduction */
+  .cal-mockup-card {
+    padding: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   Interactive Experience Enhancements (Tactile Feedback & Transitions)
+   ========================================================================== */
+
+/* 1. Modal Backdrop Blur */
+.el-overlay {
+  backdrop-filter: blur(6px) !important;
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  transition: all 0.25s ease !important;
+}
+
+/* 2. Tactile Button & Link Active State */
+button:active:not(:disabled),
+.el-button:active:not(:disabled),
+.cta-primary-btn:active,
+.cta-secondary-btn:active,
+.hot-pill:active,
+.cal-pill-item:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.08s ease;
+}
+
+/* 3. Smooth Card Hover Elevation & Spring Lift */
+.cal-feature-card,
+.activity-card,
+.activity-item-card,
+.market-card,
+.order-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cal-feature-card:hover,
+.activity-card:hover,
+.activity-item-card:hover,
+.market-card:hover,
+.order-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 4. Page Route Fade Transitions */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* 5. Cal Back-to-Top Floating Widget */
+.cal-backtop {
+  --el-backtop-bg-color: #111111 !important;
+  --el-backtop-text-color: #ffffff !important;
+  --el-backtop-hover-bg-color: #242424 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  transition: all 0.2s ease !important;
+  z-index: 2000 !important;
+}
+.cal-backtop:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 6. Clickable cursor utility */
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+
+
