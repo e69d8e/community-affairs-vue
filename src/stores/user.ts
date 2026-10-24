@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { UserInfo } from '@/types'
 import request from '@/utils/request'
 import { stompService } from '@/utils/websocket'
+import { hasPermission, STAFF_ROLES, type PermissionKey } from '@/constants/permissions'
 import { useNoticeStore } from './notice'
 
 function getInitialUser(): UserInfo | null {
@@ -30,10 +31,27 @@ export const useUserStore = defineStore('user', () => {
   // 是否具备后台管理权限 (管理员/网格员/物业)
   const canAccessAdmin = computed(() => {
     if (!user.value) return false
-    return ['ROLE_SYSTEM_ADMIN', 'ROLE_COMMUNITY_ADMIN', 'ROLE_PROPERTY_ADMIN', 'ROLE_GRID_OFFICER'].includes(
-      user.value.role
-    )
+    return STAFF_ROLES.includes(user.value.role)
   })
+
+  // 与后端 @PreAuthorize 对齐的功能权限点,详见 @/constants/permissions.ts
+  const canManageUsers = computed(() => hasPermission(user.value?.role, 'manageUsers'))
+  const canManageWords = computed(() => hasPermission(user.value?.role, 'manageWords'))
+  const canSyncSearch = computed(() => hasPermission(user.value?.role, 'syncSearch'))
+  const canManageActivities = computed(() => hasPermission(user.value?.role, 'manageActivities'))
+  const canViewScreen = computed(() => hasPermission(user.value?.role, 'viewScreen'))
+  const canVerifySignup = computed(() => hasPermission(user.value?.role, 'verifySignup'))
+  const canHandleReports = computed(() => hasPermission(user.value?.role, 'handleReports'))
+  const canPublishNotice = computed(() => hasPermission(user.value?.role, 'publishNotice'))
+  const canHandleOrder = computed(() => hasPermission(user.value?.role, 'handleOrder'))
+  const canExportOrder = computed(() => hasPermission(user.value?.role, 'exportOrder'))
+  const canAuditOrder = computed(() => hasPermission(user.value?.role, 'auditOrder'))
+  const canManageGrid = computed(() => hasPermission(user.value?.role, 'manageGrid'))
+
+  /** 通用权限判断(编程式调用场景) */
+  function can(permission: PermissionKey): boolean {
+    return hasPermission(user.value?.role, permission)
+  }
 
   function setAuth(newToken: string, newUser: UserInfo) {
     token.value = newToken
@@ -84,6 +102,19 @@ export const useUserStore = defineStore('user', () => {
     isGridOfficer,
     isResident,
     canAccessAdmin,
+    canManageUsers,
+    canManageWords,
+    canSyncSearch,
+    canManageActivities,
+    canViewScreen,
+    canVerifySignup,
+    canHandleReports,
+    canPublishNotice,
+    canHandleOrder,
+    canExportOrder,
+    canAuditOrder,
+    canManageGrid,
+    can,
     setAuth,
     fetchCurrentUser,
     logout

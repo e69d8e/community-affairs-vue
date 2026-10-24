@@ -24,6 +24,12 @@ export function setupRouterGuard(router: Router) {
       }
     }
 
+    // 检查页面级角色要求 (与后端 @PreAuthorize 对齐的细粒度权限)
+    if (to.meta.roles?.length && !to.meta.roles.includes(userStore.user?.role || '')) {
+      ElMessage.error('当前账号角色无权访问该页面')
+      return next(userStore.canAccessAdmin ? { path: '/admin/dashboard' } : { path: '/' })
+    }
+
     next()
   })
 }

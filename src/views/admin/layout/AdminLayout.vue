@@ -35,26 +35,26 @@
           <template #title>工单流转与派单处置</template>
         </el-menu-item>
 
-        <el-menu-item index="/admin/activities">
+        <el-menu-item v-if="userStore.canManageActivities" index="/admin/activities">
           <el-icon><Calendar /></el-icon>
           <template #title>社区文体活动管理</template>
         </el-menu-item>
 
-        <el-menu-item index="/admin/verify">
+        <el-menu-item v-if="userStore.canVerifySignup" index="/admin/verify">
           <el-icon><Aim /></el-icon>
           <template #title>现场扫码核销签到</template>
         </el-menu-item>
 
-        <el-sub-menu index="moderation">
+        <el-sub-menu v-if="userStore.canHandleReports || userStore.canManageWords" index="moderation">
           <template #title>
             <el-icon><Warning /></el-icon>
             <span>内容合规与风控</span>
           </template>
-          <el-menu-item index="/admin/moderation/reports">违规举报受理</el-menu-item>
-          <el-menu-item index="/admin/moderation/words">敏感词过滤库</el-menu-item>
+          <el-menu-item v-if="userStore.canHandleReports" index="/admin/moderation/reports">违规举报受理</el-menu-item>
+          <el-menu-item v-if="userStore.canManageWords" index="/admin/moderation/words">敏感词过滤库</el-menu-item>
         </el-sub-menu>
 
-        <el-menu-item v-if="userStore.isSystemAdmin || userStore.isCommunityAdmin" index="/admin/system/users">
+        <el-menu-item v-if="userStore.canManageUsers" index="/admin/system/users">
           <el-icon><User /></el-icon>
           <template #title>用户中心与权限管理</template>
         </el-menu-item>
@@ -76,8 +76,8 @@
           <!-- 消息通知中心卡片 -->
           <NotificationPopover />
 
-          <!-- 综合指挥大屏快捷入口 -->
-          <router-link to="/screen" target="_blank" class="screen-btn-link">
+          <!-- 综合指挥大屏快捷入口 (社区管理员监管职责) -->
+          <router-link v-if="userStore.canViewScreen" to="/screen" target="_blank" class="screen-btn-link">
             <el-button class="cal-screen-btn" size="small">
               <span class="btn-text-full">🖥️ 综合指挥大屏</span>
               <span class="btn-text-mini">🖥️ 大屏</span>

@@ -6,7 +6,7 @@
         <p class="page-sub">负责工单初审、派单、施工跟进与完工验收管理</p>
       </div>
       <div class="header-actions">
-        <el-button type="success" :icon="Download" @click="handleExportExcel">
+        <el-button v-if="userStore.canExportOrder" type="success" :icon="Download" @click="handleExportExcel">
           导出工单记录
         </el-button>
       </div>
@@ -83,7 +83,7 @@
             </el-button>
 
             <el-button
-              v-if="row.status === 3"
+              v-if="row.status === 3 && userStore.canHandleOrder"
               type="success"
               plain
               size="small"
@@ -93,7 +93,7 @@
             </el-button>
 
             <el-button
-              v-if="row.status === 4"
+              v-if="row.status === 4 && userStore.canHandleOrder"
               type="warning"
               size="small"
               @click="openCompleteModal(row)"

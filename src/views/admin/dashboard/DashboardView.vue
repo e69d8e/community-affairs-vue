@@ -7,10 +7,10 @@
         <p class="welcome-desc">今日阳光翠竹苑社区运行平稳，全区 6 栋网格与物业工单流转正常。</p>
       </div>
       <div class="banner-quick-actions">
-        <el-button type="danger" plain :icon="Bell" @click="showNoticeModal = true">
+        <el-button v-if="userStore.canPublishNotice" type="danger" plain :icon="Bell" @click="showNoticeModal = true">
           发布全区紧急通告
         </el-button>
-        <el-button type="primary" :icon="Refresh" :loading="syncingEs" class="cal-primary-btn" @click="handleSyncEs">
+        <el-button v-if="userStore.canSyncSearch" type="primary" :icon="Refresh" :loading="syncingEs" class="cal-primary-btn" @click="handleSyncEs">
           同步检索索引
         </el-button>
       </div>
@@ -18,7 +18,7 @@
 
     <!-- 核心统计指标卡片网格 (点击卡片直接穿透至对应管理模块) -->
     <div class="metrics-grid">
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击进入用户与居民管理" @click="$router.push('/admin/system/users')">
+      <div class="metric-card cal-mockup-card" :style="userStore.canManageUsers ? 'cursor: pointer' : ''" :title="userStore.canManageUsers ? '点击进入用户与居民管理' : ''" @click="userStore.canManageUsers && $router.push('/admin/system/users')">
         <div class="metric-header">
           <span class="metric-label">在册住户居民</span>
           <span class="metric-icon-mini icon-blue">🏡</span>
@@ -66,7 +66,7 @@
         <div class="metric-sub-note">基于 5 星好评统计 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击管理社区文体活动" @click="$router.push('/admin/activities')">
+      <div class="metric-card cal-mockup-card" :style="userStore.canManageActivities ? 'cursor: pointer' : ''" :title="userStore.canManageActivities ? '点击管理社区文体活动' : ''" @click="userStore.canManageActivities && $router.push('/admin/activities')">
         <div class="metric-header">
           <span class="metric-label">报名中文体活动</span>
           <span class="metric-icon-mini icon-indigo">🎫</span>
@@ -90,7 +90,7 @@
         <div class="metric-sub-note">物品流转与借用 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击处理违规举报" @click="$router.push('/admin/moderation/reports')">
+      <div class="metric-card cal-mockup-card" :style="userStore.canHandleReports ? 'cursor: pointer' : ''" :title="userStore.canHandleReports ? '点击处理违规举报' : ''" @click="userStore.canHandleReports && $router.push('/admin/moderation/reports')">
         <div class="metric-header">
           <span class="metric-label">待核处违规举报</span>
           <span class="metric-icon-mini icon-rose">⚠️</span>
@@ -102,7 +102,12 @@
         <div class="metric-sub-note">违规内容与举报裁决 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击打开发布通告弹窗" @click="showNoticeModal = true">
+      <div
+        class="metric-card cal-mockup-card"
+        :style="userStore.canPublishNotice ? 'cursor: pointer' : ''"
+        :title="userStore.canPublishNotice ? '点击打开发布通告弹窗' : ''"
+        @click="userStore.canPublishNotice && (showNoticeModal = true)"
+      >
         <div class="metric-header">
           <span class="metric-label">累计发布政策通告</span>
           <span class="metric-icon-mini icon-teal">📢</span>
@@ -111,7 +116,8 @@
           <span class="metric-num">{{ metrics?.totalNotices || 0 }}</span>
           <span class="unit">篇</span>
         </div>
-        <div class="metric-sub-note">+ 点击快速发布新通告</div>
+        <div v-if="userStore.canPublishNotice" class="metric-sub-note">+ 点击快速发布新通告</div>
+        <div v-else class="metric-sub-note">由社区与物业发布</div>
       </div>
     </div>
 
