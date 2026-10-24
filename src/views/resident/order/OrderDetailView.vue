@@ -80,6 +80,8 @@
                 :key="idx"
                 :src="img"
                 :preview-src-list="reportImages"
+                :initial-index="idx"
+                preview-teleported
                 fit="cover"
                 class="evidence-img"
               />
@@ -98,6 +100,8 @@
                 :key="idx"
                 :src="img"
                 :preview-src-list="handleImages"
+                :initial-index="idx"
+                preview-teleported
                 fit="cover"
                 class="evidence-img"
               />

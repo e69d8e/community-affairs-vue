@@ -6,7 +6,7 @@
         <router-link to="/" class="brand">
           <span class="brand-icon">🏡</span>
           <div class="brand-text">
-            <span class="brand-title">阳光翠竹苑</span>
+            <span class="brand-title">{{ communityName }}</span>
             <span class="brand-sub">智慧治理服务平台</span>
           </div>
         </router-link>
@@ -36,8 +36,8 @@
           <!-- 站内信未读提醒卡片 (NotificationPopover) -->
           <NotificationPopover v-if="userStore.isLoggedIn" />
 
-          <!-- 综合指挥大屏直通入口 (具备管理/网格/物业权限时展示) -->
-          <el-tooltip v-if="userStore.canAccessAdmin" content="打开智慧社区综合指挥大屏" placement="bottom">
+          <!-- 综合指挥大屏直通入口 (仅具备大屏监管权限的系统/社区管理员可见) -->
+          <el-tooltip v-if="userStore.canViewScreen" content="打开智慧社区综合指挥大屏" placement="bottom">
             <el-button class="screen-btn desktop-only" :icon="DataAnalysis" @click="$router.push('/screen')">
               指挥大屏
             </el-button>
@@ -112,7 +112,7 @@
           <div class="footer-col brand-col">
             <div class="footer-brand">
               <span class="footer-logo">🏡</span>
-              <h3 class="footer-title">阳光翠竹苑 · 智慧社区</h3>
+              <h3 class="footer-title">{{ communityName }} · 智慧社区</h3>
             </div>
             <p class="footer-desc">
               高效、温情、自主协同的现代化社区综合事务治理服务平台。
@@ -143,7 +143,7 @@
         </div>
 
         <div class="footer-bottom">
-          <p>© 2026 阳光翠竹苑智慧社区治理平台 · 工程示范项目 · 遵循 Cal.com 现代 SaaS 设计规范</p>
+          <p>© 2026 {{ communityName }}智慧社区治理平台 · 多社区共用 · 遵循 Cal.com 现代 SaaS 设计规范</p>
         </div>
       </div>
     </footer>
@@ -192,7 +192,7 @@
           <div class="drawer-brand">
             <span class="brand-icon">🏡</span>
             <div>
-              <div class="brand-title">阳光翠竹苑</div>
+              <div class="brand-title">{{ communityName }}</div>
               <div class="brand-sub">智慧治理服务平台</div>
             </div>
           </div>
@@ -255,7 +255,7 @@
         <div v-if="userStore.isLoggedIn" class="drawer-section">
           <div class="drawer-section-title">居民中心与管理后台</div>
           <div class="drawer-nav-list">
-            <div v-if="userStore.canAccessAdmin" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
+            <div v-if="userStore.canViewScreen" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
               <span class="item-icon">🖥️</span>
               <span class="item-name">智慧治理综合指挥大屏</span>
             </div>
@@ -296,7 +296,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, onMounted } from 'vue'
+import { computed, ref, provide, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Bell,
@@ -318,6 +318,7 @@ import GlobalOmniSearchModal from '@/components/common/GlobalOmniSearchModal.vue
 
 const router = useRouter()
 const userStore = useUserStore()
+const communityName = computed(() => userStore.user?.communityName || '智慧社区')
 const noticeStore = useNoticeStore()
 const showMobileDrawer = ref(false)
 const omniSearchRef = ref<InstanceType<typeof GlobalOmniSearchModal> | null>(null)
@@ -392,6 +393,7 @@ async function handleLogout() {
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 .brand-icon {
   font-size: 26px;
@@ -403,6 +405,10 @@ async function handleLogout() {
   font-weight: 600;
   letter-spacing: -0.5px;
   color: var(--cal-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 .brand-sub {
   display: block;
@@ -414,6 +420,7 @@ async function handleLogout() {
 .nav-links {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 .nav-item {
   text-decoration: none;
@@ -437,6 +444,8 @@ async function handleLogout() {
   color: var(--cal-muted);
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .cal-search-trigger-btn:hover {
   background: var(--cal-canvas);
@@ -512,6 +521,8 @@ async function handleLogout() {
   border: 1px solid var(--cal-hairline);
   background: var(--cal-canvas);
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .user-avatar-wrap:hover {
   border-color: var(--cal-ink);
@@ -693,6 +704,35 @@ async function handleLogout() {
     grid-template-columns: 1fr;
     gap: 28px;
     padding-bottom: 32px;
+  }
+}
+
+/* 中间宽度（小窗口/系统缩放）：收纳次要信息，保证顶部导航单行不挤压 */
+@media (min-width: 901px) and (max-width: 1240px) {
+  .nav-container {
+    padding: 0 16px;
+  }
+  .brand-sub {
+    display: none;
+  }
+  .brand-title {
+    font-size: 16px;
+    max-width: 150px;
+  }
+  .cal-pill-item {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .cal-search-trigger-btn .trigger-label,
+  .cal-search-trigger-btn .trigger-kbd {
+    display: none;
+  }
+  .user-name,
+  .cal-role-badge {
+    display: none;
+  }
+  .screen-btn {
+    padding: 0 10px;
   }
 }
 

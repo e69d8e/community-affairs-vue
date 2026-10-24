@@ -84,7 +84,7 @@
       <!-- 中列：数字沙盘综述 + 社区多维活力雷达 + 实时事件动态流 -->
       <div class="grid-col center-col">
         <div class="center-overview-card">
-          <div class="sandtable-badge">📍 {{ screenData?.communityName || '阳光欣苑智慧示范社区' }}</div>
+          <div class="sandtable-badge">📍 {{ screenData?.communityName || '智慧示范社区' }}</div>
           <div class="sandtable-addr">{{ screenData?.communityAddress || '高新区学府路 88 号' }}</div>
           <div ref="radarChartRef" class="radar-box" />
         </div>
@@ -138,10 +138,16 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import type { ScreenData } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
+// 大屏数据按小区取数: 平台管理员取顶栏切换的小区, 其余角色取本人小区(后端强制)
+const screenCommunityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
 
 const backText = computed(() => {
   if (userStore.canAccessAdmin) {
@@ -239,7 +245,9 @@ function handleResize() {
 
 async function loadScreenData() {
   try {
-    const res: any = await request.get('/admin/screen/data')
+    const res: any = await request.get('/admin/screen/data', {
+      params: { communityId: screenCommunityParam.value }
+    })
     screenData.value = res
   } catch (e) {}
 }

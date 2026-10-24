@@ -6,9 +6,9 @@
         <div class="brand-top">
           <div class="brand-badge">智慧治理示范平台</div>
           <div class="brand-logo">🏡</div>
-          <h1 class="brand-title">阳光翠竹苑 · 社区治理系统</h1>
+          <h1 class="brand-title">智慧社区综合治理平台</h1>
           <p class="brand-subtitle">
-            A high-efficiency, collaborative community affairs governance platform engineered with modern SaaS standards.
+            一套系统服务多个社区：网格治理、敏捷报修、邻里互助与应急通告，多社区数据安全隔离。
           </p>
         </div>
 
@@ -30,11 +30,11 @@
       <div class="login-card">
         <div class="card-header">
           <h2>用户安全登录</h2>
-          <p>请选择下方预设账号或输入凭证直接登录</p>
+          <p>{{ isDev ? '请选择下方预设账号或输入凭证直接登录' : '请输入账号与密码登录' }}</p>
         </div>
 
-        <!-- 答辩与测试快捷切换器 (Cal Pill 风格) -->
-        <div class="quick-roles-section">
+        <!-- 答辩与测试快捷切换器 (Cal Pill 风格): 仅演示环境(开发模式/本机访问)整块显示 -->
+        <div v-if="isDev && presetAccounts.length" class="quick-roles-section">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px">
             <div class="quick-title" style="margin-bottom: 0">⚡ 快速身份体验通道：</div>
             <el-switch
@@ -132,6 +132,7 @@ const form = reactive({
 const presetAccounts = isDev ? [
   { label: '系统管理员', username: 'admin', icon: '👑', desc: '全功能权限' },
   { label: '社区管理员', username: 'community_admin', icon: '🏛️', desc: '公告与审核' },
+  { label: '社区管理员(枫林府)', username: 'community_admin2', icon: '🏛️', desc: '第二社区' },
   { label: '物业管理员', username: 'property_admin', icon: '🛠️', desc: '工单与派工' },
   { label: '楼栋网格员', username: 'grid_officer', icon: '📋', desc: '认证与巡查' },
   { label: '普通居民', username: 'resident', icon: '🏡', desc: '报修与报名' }

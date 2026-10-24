@@ -266,10 +266,22 @@ import { Search, Refresh, Download, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import type { WorkOrder } from '@/types'
 
 const route = useRoute()
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
+
+// 平台管理员顶栏切换的当前查看小区 (其余角色后端强制本人小区)
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+
+watch(() => communityStore.selectedId, () => {
+  page.value = 1
+  loadOrders()
+})
 
 const loading = ref(false)
 const orderList = ref<WorkOrder[]>([])
@@ -360,6 +372,7 @@ async function loadOrders() {
     if (filterType.value) params.orderType = filterType.value
     if (filterStatus.value) params.status = filterStatus.value
     if (filterUrgent.value !== undefined) params.isUrgent = filterUrgent.value
+    if (communityParam.value) params.communityId = communityParam.value
 
     const res: any = await request.get('/order/admin/list', { params })
     orderList.value = res.records || []
@@ -454,7 +467,10 @@ async function openDetailTimeline(row: WorkOrder) {
 
 async function handleExportExcel() {
   try {
-    const res: any = await request.get('/order/admin/export', { responseType: 'blob' })
+    const res: any = await request.get('/order/admin/export', {
+      params: { communityId: communityParam.value },
+      responseType: 'blob'
+    })
     const blob = new Blob([res.data || res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)

@@ -138,11 +138,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import type { Activity } from '@/types'
 
 const route = useRoute()
@@ -185,6 +187,13 @@ async function handlePasteCode() {
 const lastVerifiedResult = ref<any>(null)
 const historyList = ref<Array<{ realName: string; phone: string; time: string }>>([])
 
+const userStore = useUserStore()
+const communityStore = useCommunityStore()
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+watch(() => communityStore.selectedId, () => loadActivities())
+
 onMounted(async () => {
   await loadActivities()
   if (route.query.activityId) {
@@ -194,7 +203,9 @@ onMounted(async () => {
 
 async function loadActivities() {
   try {
-    const res: any = await request.get('/activity/list', { params: { size: 50 } })
+    const res: any = await request.get('/activity/list', {
+      params: { size: 50, communityId: communityParam.value }
+    })
     activeActivities.value = res.records || []
     if (activeActivities.value.length > 0 && !selectedActivityId.value) {
       selectedActivityId.value = activeActivities.value[0].id

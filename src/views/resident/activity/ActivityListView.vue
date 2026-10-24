@@ -228,6 +228,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
 import type { Activity } from '@/types'
@@ -235,6 +236,7 @@ import type { Activity } from '@/types'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
 
 const category = ref('')
 const statusFilter = ref<'all' | 'open' | 'signed'>('all')
@@ -351,6 +353,7 @@ function resetAndLoad() {
 }
 
 async function loadActivities() {
+  await initGuestCommunity()
   loading.value = true
   try {
     const params: any = {
@@ -360,7 +363,7 @@ async function loadActivities() {
     if (category.value) {
       params.category = category.value
     }
-    const res: any = await request.get('/activity/list', { params })
+    const res: any = await request.get('/activity/list', { params: { ...params, communityId: publicCommunityParam.value } })
     activities.value = res.records || []
     total.value = res.total || 0
   } finally {

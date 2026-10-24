@@ -4,10 +4,26 @@
       <div class="card-header">
         <div class="brand-logo">🏡</div>
         <h2 class="register-title">新居民实名注册</h2>
-        <p class="register-sub">加入阳光翠竹苑智慧社区，体验一站式高效治理服务</p>
+        <p class="register-sub">选择您所在的社区，体验一站式高效治理服务</p>
       </div>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form">
+        <el-form-item label="所属社区" prop="communityId">
+          <el-select
+            v-model="form.communityId"
+            placeholder="请选择要加入的社区"
+            size="large"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="c in communities"
+              :key="c.id"
+              :label="c.name"
+              :value="c.id"
+            />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="登录账号" prop="username">
           <el-input
             v-model="form.username"
@@ -66,28 +82,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { User, Lock, Postcard, Iphone } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
+import type { CommunityOption } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
+const communities = ref<CommunityOption[]>([])
 
 const form = reactive({
   username: '',
   password: '',
   realName: '',
-  phone: ''
+  phone: '',
+  communityId: ''
 })
 
 const rules: FormRules = {
+  communityId: [
+    { required: true, message: '请选择要加入的社区', trigger: 'change' }
+  ],
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { pattern: /^[a-zA-Z0-9_]{3,20}$/, message: '用户名需为3-20位字母、数字或下划线', trigger: 'blur' }
@@ -104,6 +128,10 @@ const rules: FormRules = {
     { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的11位手机号', trigger: 'blur' }
   ]
 }
+
+onMounted(async () => {
+  communities.value = await communityStore.fetchCommunities()
+})
 
 async function handleRegister() {
   if (!formRef.value) return

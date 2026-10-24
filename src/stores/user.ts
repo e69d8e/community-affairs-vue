@@ -47,6 +47,7 @@ export const useUserStore = defineStore('user', () => {
   const canExportOrder = computed(() => hasPermission(user.value?.role, 'exportOrder'))
   const canAuditOrder = computed(() => hasPermission(user.value?.role, 'auditOrder'))
   const canManageGrid = computed(() => hasPermission(user.value?.role, 'manageGrid'))
+  const canManageSpatial = computed(() => hasPermission(user.value?.role, 'manageSpatial'))
 
   /** 通用权限判断(编程式调用场景) */
   function can(permission: PermissionKey): boolean {
@@ -114,6 +115,7 @@ export const useUserStore = defineStore('user', () => {
     canExportOrder,
     canAuditOrder,
     canManageGrid,
+    canManageSpatial,
     can,
     setAuth,
     fetchCurrentUser,

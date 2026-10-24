@@ -115,6 +115,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '网格空间与房产认证', roles: PERMISSIONS.manageGrid }
       },
       {
+        path: 'spatial',
+        name: 'AdminSpatial',
+        component: () => import('@/views/admin/grid/SpatialManageView.vue'),
+        meta: { title: '楼宇空间结构维护', roles: PERMISSIONS.manageSpatial }
+      },
+      {
         path: 'orders',
         name: 'AdminOrders',
         component: () => import('@/views/admin/order/OrderManageView.vue'),

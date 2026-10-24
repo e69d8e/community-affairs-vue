@@ -7,7 +7,7 @@
       <div class="greeting-left">
         <div class="greeting-badge">
           <span class="badge-dot"></span>
-          <span>🏡 阳光翠竹苑 · 智慧便民综合治理平台</span>
+          <span>🏡 {{ communityName }} · 智慧便民综合治理平台</span>
         </div>
         <h1 class="greeting-title">
           {{ greetingText }}<span v-if="userStore.isLoggedIn && userDisplayName">，{{ userDisplayName }}</span>
@@ -214,7 +214,7 @@
           <template v-else>
             <div class="guest-widget-header">
               <div class="guest-logo">🏡</div>
-              <h3 class="guest-title">阳光翠竹苑 · 居民服务通道</h3>
+              <h3 class="guest-title">{{ communityName }} · 居民服务通道</h3>
               <p class="guest-desc">登录后即可一键申报房屋故障、实时跟踪物业工单进度，并在线出示文体活动入场券。</p>
             </div>
 
@@ -279,7 +279,8 @@
             </div>
           </div>
 
-          <div v-if="noticeList.length === 0" class="empty-list-hint">
+          <div v-if="portalLoading" class="empty-list-hint">正在加载社区要闻…</div>
+          <div v-else-if="noticeList.length === 0" class="empty-list-hint">
             暂无社区最新公告
           </div>
         </div>
@@ -357,7 +358,8 @@
               </div>
             </div>
 
-            <div v-if="activityList.length === 0" class="empty-list-hint">
+            <div v-if="portalLoading" class="empty-list-hint">正在加载近期活动…</div>
+            <div v-else-if="activityList.length === 0" class="empty-list-hint">
               近期暂无正在报名的文体活动
             </div>
           </div>
@@ -387,7 +389,8 @@
               </div>
             </div>
 
-            <div v-if="postList.length === 0" class="empty-list-hint">
+            <div v-if="portalLoading" class="empty-list-hint">正在加载邻里互助…</div>
+            <div v-else-if="postList.length === 0" class="empty-list-hint">
               暂无邻里闲置或互助信息
             </div>
           </div>
@@ -512,16 +515,21 @@ import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
 import { isDev } from '@/utils/env'
 import { useUserStore } from '@/stores/user'
+import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import type { Notice, Activity, MarketPost, WorkOrder } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
+const communityName = computed(() => userStore.user?.communityName || '智慧社区')
+const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
 const openOmniSearch = inject<(kw?: string) => void>('openOmniSearch')
 
 // 页面基础数据
 const noticeList = ref<Notice[]>([])
 const activityList = ref<Activity[]>([])
 const postList = ref<MarketPost[]>([])
+/** 门户三区块(公告/活动/互助)是否仍在首屏加载，加载中不闪现"暂无数据"空态 */
+const portalLoading = ref(true)
 const activeLifeTab = ref<'activities' | 'market'>('activities')
 
 // 用户个人事务速览数据
@@ -572,9 +580,10 @@ const topNotice = computed(() => {
 })
 
 onMounted(async () => {
-  loadNotices()
-  loadActivities()
-  loadMarketPosts()
+  // 游客模式下先解析默认展示社区, 再并行加载三个公开列表, 避免空 communityId 请求
+  await initGuestCommunity()
+  await Promise.all([loadNotices(), loadActivities(), loadMarketPosts()])
+  portalLoading.value = false
   loadUserAffairs()
 })
 
@@ -655,21 +664,30 @@ async function submitHomeRate() {
 
 async function loadNotices() {
   try {
-    const res: any = await request.get('/notice/list', { params: { size: 6 } })
+    await initGuestCommunity()
+    const res: any = await request.get('/notice/list', {
+      params: { size: 6, communityId: publicCommunityParam.value }
+    })
     noticeList.value = res.records || []
   } catch (ignored) {}
 }
 
 async function loadActivities() {
+  await initGuestCommunity()
   try {
-    const res: any = await request.get('/activity/list', { params: { size: 4, status: 1 } })
+    const res: any = await request.get('/activity/list', {
+      params: { size: 4, status: 1, communityId: publicCommunityParam.value }
+    })
     activityList.value = res.records || []
   } catch (ignored) {}
 }
 
 async function loadMarketPosts() {
+  await initGuestCommunity()
   try {
-    const res: any = await request.get('/market/list', { params: { size: 4 } })
+    const res: any = await request.get('/market/list', {
+      params: { size: 4, communityId: publicCommunityParam.value }
+    })
     postList.value = res.records || []
   } catch (ignored) {}
 }

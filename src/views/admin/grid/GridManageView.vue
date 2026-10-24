@@ -37,8 +37,9 @@
                 v-if="row.certMaterial"
                 :src="row.certMaterial"
                 :preview-src-list="[row.certMaterial]"
+                preview-teleported
                 fit="cover"
-                style="width: 48px; height: 48px; border-radius: 6px"
+                style="width: 48px; height: 48px; border-radius: 6px; cursor: pointer"
               />
               <span v-else class="text-muted">无附件</span>
             </template>
@@ -188,10 +189,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import type { Building, Unit, House } from '@/types'
 
 const activeTab = ref('audit')
@@ -228,6 +231,17 @@ const occupiedCount = computed(() => houses.value.filter(h => h.liveStatus === 1
 const filteredHouses = computed(() => {
   if (houseLiveFilter.value === 'all') return houses.value
   return houses.value.filter(h => h.liveStatus === houseLiveFilter.value)
+})
+
+const userStore = useUserStore()
+const communityStore = useCommunityStore()
+// 平台管理员顶栏切换的当前查看小区 (其余角色后端强制本人小区)
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+watch(() => communityStore.selectedId, () => {
+  currentBuildingId.value = ''
+  loadBuildings()
 })
 
 onMounted(() => {
@@ -284,7 +298,9 @@ async function confirmReject() {
 }
 
 async function loadBuildings() {
-  const res: any = await request.get('/grid/buildings')
+  const res: any = await request.get('/grid/buildings', {
+    params: { communityId: communityParam.value }
+  })
   buildings.value = res || []
   if (buildings.value.length > 0 && !currentBuildingId.value) {
     await selectBuilding(buildings.value[0].id)

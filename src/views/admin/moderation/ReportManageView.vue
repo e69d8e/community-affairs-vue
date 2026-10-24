@@ -7,7 +7,7 @@
       </div>
       <div class="header-actions">
         <el-radio-group v-model="filterStatus" @change="loadReports">
-          <el-radio-button :value="undefined">全部记录</el-radio-button>
+          <el-radio-button value="">全部记录</el-radio-button>
           <el-radio-button :value="0">待核实 ({{ pendingCount }})</el-radio-button>
           <el-radio-button :value="1">已下架处罚</el-radio-button>
           <el-radio-button :value="2">已驳回</el-radio-button>
@@ -108,9 +108,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted , watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useCommunityStore } from '@/stores/community'
+import { useUserStore } from '@/stores/user'
 
 const loading = ref(false)
 const reports = ref<any[]>([])
@@ -118,7 +120,7 @@ const page = ref(1)
 const size = ref(10)
 const total = ref(0)
 const pendingCount = ref(0)
-const filterStatus = ref<number | undefined>()
+const filterStatus = ref<number | ''>('')
 
 const showHandleModal = ref(false)
 const currentRow = ref<any>(null)
@@ -137,6 +139,17 @@ const dismissPresets = [
   '举报所述情况证据不足，暂不予处罚并持续观察'
 ]
 
+const userStore = useUserStore()
+const communityStore = useCommunityStore()
+// 平台管理员顶栏切换的当前查看小区 (其余角色后端强制本人小区)
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+watch(() => communityStore.selectedId, () => {
+  page.value = 1
+  loadReports()
+})
+
 onMounted(() => {
   loadReports()
 })
@@ -148,14 +161,15 @@ async function loadReports() {
       page: page.value,
       size: size.value
     }
-    if (filterStatus.value !== undefined) params.status = filterStatus.value
+    if (filterStatus.value !== '') params.status = filterStatus.value
+    if (communityParam.value) params.communityId = communityParam.value
 
     const res: any = await request.get('/moderation/admin/report/list', { params })
     reports.value = res.records || []
     total.value = res.total || 0
 
     // 统计待处理数量
-    if (filterStatus.value === undefined) {
+    if (filterStatus.value === '') {
       pendingCount.value = reports.value.filter(r => r.status === 0).length
     }
   } finally {

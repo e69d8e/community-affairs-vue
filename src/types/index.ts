@@ -27,7 +27,17 @@ export interface UserInfo {
   status: number
   creditScore: number
   createTime?: string
+  communityId?: string | null
+  communityName?: string | null
   boundHouses?: HouseInfo[]
+}
+
+// 可选小区(注册下拉 / 管理端社区切换器共用)
+export interface CommunityOption {
+  id: string
+  name: string
+  code: string
+  address: string
 }
 
 // 关联房产

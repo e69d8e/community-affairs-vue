@@ -245,15 +245,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
 import type { Activity } from '@/types'
 
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
+
+// 平台管理员顶栏切换的当前查看小区 (其余角色后端强制本人小区)
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+
+watch(() => communityStore.selectedId, () => {
+  page.value = 1
+  loadActivities()
+})
 
 const loading = ref(false)
 const activities = ref<Activity[]>([])
@@ -382,7 +394,7 @@ async function loadActivities() {
   loading.value = true
   try {
     const res: any = await request.get('/activity/list', {
-      params: { page: page.value, size: size.value }
+      params: { page: page.value, size: size.value, communityId: communityParam.value }
     })
     activities.value = res.records || []
     total.value = res.total || 0
@@ -395,9 +407,13 @@ async function handleCreateActivity() {
   if (!formRef.value) return
   await formRef.value.validate()
 
+  if (userStore.isSystemAdmin && !communityParam.value) {
+    ElMessage.warning('请先在顶栏社区切换器中选择具体小区，再创建活动')
+    return
+  }
   submitting.value = true
   try {
-    await request.post('/activity/admin/create', form)
+    await request.post('/activity/admin/create', { ...form, communityId: communityParam.value })
     ElMessage.success('活动发布成功！已在居民端同步上线')
     showCreateModal.value = false
     await loadActivities()

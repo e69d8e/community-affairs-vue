@@ -576,6 +576,7 @@
               <el-image
                 :src="certMaterialUrl"
                 :preview-src-list="[certMaterialUrl]"
+                preview-teleported
                 fit="cover"
                 class="cert-img"
               />

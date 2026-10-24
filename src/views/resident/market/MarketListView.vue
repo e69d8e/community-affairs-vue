@@ -315,6 +315,7 @@
                   :src="url"
                   :preview-src-list="uploadedImages"
                   :initial-index="idx"
+                  preview-teleported
                   fit="cover"
                   class="thumb-img"
                 />
@@ -405,6 +406,7 @@ import { Plus, Search, Crop, Close } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
 import MarketChatModal from '@/components/market/MarketChatModal.vue'
 import type { MarketPost } from '@/types'
@@ -412,6 +414,7 @@ import type { MarketPost } from '@/types'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
 
 const loading = ref(false)
 const publishing = ref(false)
@@ -599,6 +602,7 @@ watch(() => route.query, (q) => {
 })
 
 async function loadPosts() {
+  await initGuestCommunity()
   loading.value = true
   try {
     const params: any = {
@@ -609,7 +613,7 @@ async function loadPosts() {
     if (filterStatus.value > 0) params.status = filterStatus.value
     if (searchKeyword.value.trim()) params.keyword = searchKeyword.value.trim()
 
-    const res: any = await request.get('/market/list', { params })
+    const res: any = await request.get('/market/list', { params: { ...params, communityId: publicCommunityParam.value } })
     posts.value = res.records || []
     total.value = res.total || 0
   } finally {

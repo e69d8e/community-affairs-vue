@@ -30,6 +30,11 @@
           <template #title>网格空间与房产认证</template>
         </el-menu-item>
 
+        <el-menu-item v-if="userStore.canManageSpatial" index="/admin/spatial">
+          <el-icon><Grid /></el-icon>
+          <template #title>楼宇空间结构维护</template>
+        </el-menu-item>
+
         <el-menu-item index="/admin/orders">
           <el-icon><Tools /></el-icon>
           <template #title>工单流转与派单处置</template>
@@ -70,6 +75,23 @@
             <el-icon><Fold v-if="!isCollapsed && !mobileMenuOpen" /><Expand v-else /></el-icon>
           </button>
           <span class="role-badge">{{ getRoleTitle(userStore.user?.role) }}</span>
+
+          <!-- 平台管理员的跨社区数据视图切换 (其余角色由后端强制本小区) -->
+          <el-select
+            v-if="userStore.isSystemAdmin"
+            v-model="communityStore.selectedId"
+            class="community-switcher"
+            size="small"
+            @change="communityStore.select(communityStore.selectedId)"
+          >
+            <el-option label="全部小区" value="all" />
+            <el-option
+              v-for="c in communityStore.communities"
+              :key="c.id"
+              :label="c.name"
+              :value="c.id"
+            />
+          </el-select>
         </div>
 
         <div class="topbar-right">
@@ -122,11 +144,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   DataBoard,
   OfficeBuilding,
+  Grid,
   Tools,
   Calendar,
   Aim,
@@ -137,11 +160,19 @@ import {
   ArrowDown
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import NotificationPopover from '@/components/common/NotificationPopover.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
+
+onMounted(() => {
+  if (userStore.isSystemAdmin) {
+    communityStore.fetchCommunities()
+  }
+})
 
 const isCollapsed = ref(false)
 const mobileMenuOpen = ref(false)
@@ -304,6 +335,16 @@ function getRoleTitle(role?: string) {
   padding: 3px 12px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--cal-hairline);
+}
+
+.community-switcher {
+  width: 180px;
+}
+
+@media (max-width: 768px) {
+  .community-switcher {
+    width: 130px;
+  }
 }
 
 .topbar-right {

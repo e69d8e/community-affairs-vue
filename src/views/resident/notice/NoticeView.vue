@@ -134,9 +134,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Search, User, View } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import type { Notice } from '@/types'
 
 const route = useRoute()
+const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
 const activeTab = ref('all')
 const keyword = ref((route.query.kw as string) || '')
 const notices = ref<Notice[]>([])
@@ -192,6 +194,7 @@ function handleClear() {
 }
 
 async function loadNotices() {
+  await initGuestCommunity()
   loading.value = true
   try {
     const params: any = {
@@ -204,7 +207,7 @@ async function loadNotices() {
     if (keyword.value.trim()) {
       params.keyword = keyword.value.trim()
     }
-    const res: any = await request.get('/notice/list', { params })
+    const res: any = await request.get('/notice/list', { params: { ...params, communityId: publicCommunityParam.value } })
     notices.value = res.records || []
     total.value = res.total || 0
   } finally {

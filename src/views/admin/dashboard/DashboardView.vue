@@ -4,7 +4,7 @@
     <div class="welcome-banner cal-mockup-card">
       <div>
         <h2 class="welcome-title">欢迎工作台，{{ userStore.user?.realName || userStore.user?.username }}！</h2>
-        <p class="welcome-desc">今日阳光翠竹苑社区运行平稳，全区 6 栋网格与物业工单流转正常。</p>
+        <p class="welcome-desc">今日{{ userStore.user?.communityName || '社区' }}运行平稳，网格与物业工单流转正常。</p>
       </div>
       <div class="banner-quick-actions">
         <el-button v-if="userStore.canPublishNotice" type="danger" plain :icon="Bell" @click="showNoticeModal = true">
@@ -18,7 +18,12 @@
 
     <!-- 核心统计指标卡片网格 (点击卡片直接穿透至对应管理模块) -->
     <div class="metrics-grid">
-      <div class="metric-card cal-mockup-card" :style="userStore.canManageUsers ? 'cursor: pointer' : ''" :title="userStore.canManageUsers ? '点击进入用户与居民管理' : ''" @click="userStore.canManageUsers && $router.push('/admin/system/users')">
+      <div
+        class="metric-card cal-mockup-card"
+        :class="{ 'is-clickable': userStore.canManageUsers }"
+        :title="userStore.canManageUsers ? '点击进入用户与居民管理' : ''"
+        @click="userStore.canManageUsers && $router.push('/admin/system/users')"
+      >
         <div class="metric-header">
           <span class="metric-label">在册住户居民</span>
           <span class="metric-icon-mini icon-blue">🏡</span>
@@ -27,10 +32,15 @@
           <span class="metric-num">{{ metrics?.totalResidents || 0 }}</span>
           <span class="unit">户</span>
         </div>
-        <div class="metric-sub-note">覆盖全区 6 栋楼宇 →</div>
+        <div v-if="userStore.canManageUsers" class="metric-sub-note">点击进入用户与居民管理 →</div>
+        <div v-else class="metric-sub-note">覆盖全区 6 栋楼宇</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击筛选待初审工单" @click="$router.push('/admin/orders?status=1')">
+      <div
+        class="metric-card cal-mockup-card is-clickable"
+        title="点击筛选待初审工单"
+        @click="$router.push('/admin/orders?status=1')"
+      >
         <div class="metric-header">
           <span class="metric-label">待初审 / 待派工单</span>
           <span class="metric-icon-mini icon-red">🛠️</span>
@@ -42,7 +52,11 @@
         <div class="metric-sub-note">点击立即初审派工 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击查看施工中工单" @click="$router.push('/admin/orders?status=4')">
+      <div
+        class="metric-card cal-mockup-card is-clickable"
+        title="点击查看施工中工单"
+        @click="$router.push('/admin/orders?status=4')"
+      >
         <div class="metric-header">
           <span class="metric-label">维修师傅施工中</span>
           <span class="metric-icon-mini icon-amber">⚡</span>
@@ -54,7 +68,11 @@
         <div class="metric-sub-note">物业工程部巡修 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击查看已办结好评工单" @click="$router.push('/admin/orders?status=6')">
+      <div
+        class="metric-card cal-mockup-card is-clickable"
+        title="点击查看已办结好评工单"
+        @click="$router.push('/admin/orders?status=6')"
+      >
         <div class="metric-header">
           <span class="metric-label">报修办结好评率</span>
           <span class="metric-icon-mini icon-emerald">✅</span>
@@ -66,7 +84,12 @@
         <div class="metric-sub-note">基于 5 星好评统计 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" :style="userStore.canManageActivities ? 'cursor: pointer' : ''" :title="userStore.canManageActivities ? '点击管理社区文体活动' : ''" @click="userStore.canManageActivities && $router.push('/admin/activities')">
+      <div
+        class="metric-card cal-mockup-card"
+        :class="{ 'is-clickable': userStore.canManageActivities }"
+        :title="userStore.canManageActivities ? '点击管理社区文体活动' : ''"
+        @click="userStore.canManageActivities && $router.push('/admin/activities')"
+      >
         <div class="metric-header">
           <span class="metric-label">报名中文体活动</span>
           <span class="metric-icon-mini icon-indigo">🎫</span>
@@ -75,10 +98,15 @@
           <span class="metric-num">{{ metrics?.activeActivities || 0 }}</span>
           <span class="unit">项</span>
         </div>
-        <div class="metric-sub-note">管理活动与核销 →</div>
+        <div v-if="userStore.canManageActivities" class="metric-sub-note">管理活动与核销 →</div>
+        <div v-else class="metric-sub-note">由社区管委会统筹组织</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" style="cursor: pointer" title="点击查看邻里闲置集市" @click="$router.push('/market')">
+      <div
+        class="metric-card cal-mockup-card is-clickable"
+        title="点击查看邻里闲置集市"
+        @click="$router.push('/market')"
+      >
         <div class="metric-header">
           <span class="metric-label">本月邻里闲置互助</span>
           <span class="metric-icon-mini icon-purple">🛍️</span>
@@ -90,7 +118,12 @@
         <div class="metric-sub-note">物品流转与借用 →</div>
       </div>
 
-      <div class="metric-card cal-mockup-card" :style="userStore.canHandleReports ? 'cursor: pointer' : ''" :title="userStore.canHandleReports ? '点击处理违规举报' : ''" @click="userStore.canHandleReports && $router.push('/admin/moderation/reports')">
+      <div
+        class="metric-card cal-mockup-card"
+        :class="{ 'is-clickable': userStore.canHandleReports }"
+        :title="userStore.canHandleReports ? '点击处理违规举报' : ''"
+        @click="userStore.canHandleReports && $router.push('/admin/moderation/reports')"
+      >
         <div class="metric-header">
           <span class="metric-label">待核处违规举报</span>
           <span class="metric-icon-mini icon-rose">⚠️</span>
@@ -99,12 +132,13 @@
           <span class="metric-num text-rose">{{ metrics?.openReports || 0 }}</span>
           <span class="unit">条</span>
         </div>
-        <div class="metric-sub-note">违规内容与举报裁决 →</div>
+        <div v-if="userStore.canHandleReports" class="metric-sub-note">违规内容与举报裁决 →</div>
+        <div v-else class="metric-sub-note">由社区与网格员受理核处</div>
       </div>
 
       <div
         class="metric-card cal-mockup-card"
-        :style="userStore.canPublishNotice ? 'cursor: pointer' : ''"
+        :class="{ 'is-clickable': userStore.canPublishNotice }"
         :title="userStore.canPublishNotice ? '点击打开发布通告弹窗' : ''"
         @click="userStore.canPublishNotice && (showNoticeModal = true)"
       >
@@ -276,14 +310,24 @@
 import { isDev } from '@/utils/env'
 
 // 演示用服务监测面板仅在开发环境显示
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Bell, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useUserStore } from '@/stores/user'
+import { useCommunityStore } from '@/stores/community'
 import type { DashboardMetricsVo, WorkOrder } from '@/types'
 
 const userStore = useUserStore()
+const communityStore = useCommunityStore()
+
+// 平台管理员顶栏切换的当前查看小区 (其余角色后端强制本人小区, 参数无效)
+const communityParam = computed(() =>
+  userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
+)
+
+// 顶部社区切换后刷新工作台指标
+watch(() => communityStore.selectedId, () => loadData())
 
 const loading = ref(false)
 const syncingEs = ref(false)
@@ -335,7 +379,7 @@ const noticeTemplates = [
     label: '💧 停水检修通知',
     type: 3,
     title: '关于本周末全区二次供水管道清洗与临时停水通知',
-    content: '<p>尊敬的阳光翠竹苑居民：为保障饮用水水质安全，物业工程部将于本周六 13:00-17:00 对全区二次供水箱进行清洗消毒，届时将暂停供水，请各住户提前做好储水准备。</p>'
+    content: '<p>尊敬的社区居民：为保障饮用水水质安全，物业工程部将于本周六 13:00-17:00 对全区二次供水箱进行清洗消毒，届时将暂停供水，请各住户提前做好储水准备。</p>'
   },
   {
     label: '⛈️ 暴雨防汛预警',
@@ -369,11 +413,15 @@ onMounted(() => {
 async function loadData() {
   loading.value = true
   try {
-    const res: any = await request.get('/admin/dashboard/metrics')
+    const res: any = await request.get('/admin/dashboard/metrics', {
+      params: { communityId: communityParam.value }
+    })
     metrics.value = res
 
     // 载入待初审工单列表
-    const orderRes: any = await request.get('/order/admin/list', { params: { status: 1, size: 5 } })
+    const orderRes: any = await request.get('/order/admin/list', {
+      params: { status: 1, size: 5, communityId: communityParam.value }
+    })
     pendingOrdersList.value = orderRes.records || []
   } finally {
     loading.value = false
@@ -396,9 +444,16 @@ async function handlePublishNotice() {
     ElMessage.warning('请填写通告标题和正文')
     return
   }
+  if (userStore.isSystemAdmin && !communityParam.value) {
+    ElMessage.warning('请先在顶栏社区切换器中选择具体小区，再发布通告')
+    return
+  }
   publishingNotice.value = true
   try {
-    await request.post('/notice/admin/publish', noticeForm)
+    await request.post('/notice/admin/publish', {
+      ...noticeForm,
+      communityId: communityParam.value
+    })
     ElMessage.success('通告已成功发布并推送！')
     showNoticeModal.value = false
     noticeForm.title = ''
@@ -457,7 +512,11 @@ async function handlePublishNotice() {
   transition: all 0.2s ease;
 }
 
-.metric-card:hover {
+.metric-card.is-clickable {
+  cursor: pointer;
+}
+
+.metric-card.is-clickable:hover {
   border-color: var(--cal-ink);
   transform: translateY(-2px);
 }

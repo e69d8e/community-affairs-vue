@@ -10,7 +10,7 @@
     <!-- 直观角色快筛与搜索栏 -->
     <div class="filter-card card-hover">
       <el-radio-group v-model="filterRole" @change="handleRoleFilterChange">
-        <el-radio-button :value="undefined">全部用户 ({{ total }})</el-radio-button>
+        <el-radio-button value="">全部用户 ({{ total }})</el-radio-button>
         <el-radio-button value="ROLE_SYSTEM_ADMIN">👑 超级管理员</el-radio-button>
         <el-radio-button value="ROLE_COMMUNITY_ADMIN">🏛️ 社区管理员</el-radio-button>
         <el-radio-button value="ROLE_PROPERTY_ADMIN">🛠️ 物业管理员</el-radio-button>
@@ -44,6 +44,13 @@
         </el-table-column>
         <el-table-column prop="username" label="登录账号" width="130" />
         <el-table-column prop="realName" label="真实姓名" width="120" />
+        <el-table-column label="所属社区" width="150">
+          <template #default="{ row }">
+            <el-tag size="small" :type="row.communityId ? 'primary' : 'warning'" effect="plain">
+              {{ communityNameOf(row.communityId) }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="phone" label="联系电话" width="130" />
         <el-table-column label="当前角色" width="160">
           <template #default="{ row }">
@@ -123,10 +130,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Search, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useCommunityStore } from '@/stores/community'
 import type { UserInfo } from '@/types'
 
 const loading = ref(false)
@@ -134,7 +142,7 @@ const userList = ref<UserInfo[]>([])
 const page = ref(1)
 const size = ref(10)
 const total = ref(0)
-const filterRole = ref<string | undefined>()
+const filterRole = ref<string>('')
 const searchKeyword = ref('')
 
 const showRoleModal = ref(false)
@@ -150,9 +158,22 @@ const roleOptions = [
   { value: 'ROLE_RESIDENT', icon: '🏡', label: '社区普通居民', desc: '浏览通知、报名活动、提交工单与邻里集市互动' }
 ]
 
-onMounted(() => {
+const communityStore = useCommunityStore()
+// 用户中心仅平台管理员可访问; 顶栏切换小区即按小区过滤用户
+const communityParam = computed(() => communityStore.selectedCommunityId)
+watch(() => communityStore.selectedId, () => {
+  page.value = 1
   loadUsers()
 })
+onMounted(() => {
+  communityStore.fetchCommunities()
+  loadUsers()
+})
+
+function communityNameOf(communityId?: string | null) {
+  if (!communityId) return '平台级'
+  return communityStore.communities.find((c) => c.id === String(communityId))?.name || '-'
+}
 
 function handleRoleFilterChange() {
   page.value = 1
@@ -168,6 +189,7 @@ async function loadUsers() {
     }
     if (filterRole.value) params.role = filterRole.value
     if (searchKeyword.value.trim()) params.keyword = searchKeyword.value.trim()
+    if (communityParam.value) params.communityId = communityParam.value
 
     const res: any = await request.get('/user/admin/list', { params })
     userList.value = res.records || []
@@ -178,7 +200,7 @@ async function loadUsers() {
 }
 
 function resetFilter() {
-  filterRole.value = undefined
+  filterRole.value = ''
   searchKeyword.value = ''
   page.value = 1
   loadUsers()

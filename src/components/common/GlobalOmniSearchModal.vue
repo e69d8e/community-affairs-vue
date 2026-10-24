@@ -228,7 +228,7 @@
           <span class="kbd-item"><kbd>ESC</kbd> 关闭面板</span>
         </div>
         <div class="footer-platform">
-          <span>阳光翠竹苑 · 智慧社区全站智能中枢</span>
+          <span>{{ userStore.user?.communityName || '智慧社区' }} · 全站智能中枢</span>
         </div>
       </div>
     </div>
@@ -240,9 +240,11 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Loading } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useUserStore } from '@/stores/user'
 import type { Notice, Activity, MarketPost } from '@/types'
 
 const router = useRouter()
+const userStore = useUserStore()
 const visible = ref(false)
 const query = ref('')
 const activeTab = ref<'all' | 'notices' | 'activities' | 'market'>('all')

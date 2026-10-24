@@ -109,6 +109,7 @@
                   :src="file.url"
                   :preview-src-list="fileList.map(f => f.url)"
                   :initial-index="idx"
+                  preview-teleported
                   fit="cover"
                   class="thumb-img"
                 />

@@ -45,6 +45,8 @@ export const PERMISSIONS = {
   auditOrder: STAFF_ROLES,
   /** 网格空间与房产认证审核(网格员走访认证,仅本楼栋数据) */
   manageGrid: STAFF_ROLES,
+  /** 楼宇空间结构维护:楼栋/单元/房屋台账增删改与批量生成(系统/社区/物业管理员) */
+  manageSpatial: [ROLES.SYSTEM_ADMIN, ROLES.COMMUNITY_ADMIN, ROLES.PROPERTY_ADMIN],
   /** 管理工作台仪表盘指标 */
   viewDashboard: STAFF_ROLES
 } as const

@@ -213,7 +213,7 @@
         <el-form-item label="实物照片">
           <div class="upload-photo-row">
             <div v-for="(url, idx) in uploadedImages" :key="url" class="photo-item">
-              <el-image :src="url" :preview-src-list="uploadedImages" fit="cover" class="img-box" />
+              <el-image :src="url" :preview-src-list="uploadedImages" :initial-index="idx" preview-teleported fit="cover" class="img-box" />
               <button type="button" class="del-btn" @click="uploadedImages.splice(idx, 1)">
                 <el-icon><Close /></el-icon>
               </button>
