@@ -214,11 +214,9 @@
         </el-form-item>
         <el-form-item label="上传完工现场照">
           <el-upload
-            action="/api/common/upload"
             list-type="picture-card"
-            :headers="uploadHeaders"
+            :http-request="doCompleteUpload"
             :limit="3"
-            :on-success="handleUploadCompleteSuccess"
           >
             <el-icon><Plus /></el-icon>
           </el-upload>
@@ -265,6 +263,7 @@ import { useRoute } from 'vue-router'
 import { Search, Refresh, Download, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { uploadFile } from '@/utils/upload'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
 import type { WorkOrder } from '@/types'
@@ -319,10 +318,6 @@ const submittingComplete = ref(false)
 // 轨迹时间轴
 const showTimelineDrawer = ref(false)
 const currentDetail = ref<WorkOrder | null>(null)
-
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`
-}))
 
 function onQuickStatusChange(val: string | number) {
   filterStatus.value = val === 'all' ? undefined : Number(val)
@@ -434,9 +429,15 @@ function openCompleteModal(row: WorkOrder) {
   showCompleteModal.value = true
 }
 
-function handleUploadCompleteSuccess(res: any) {
-  if (res.code === 200 && res.data?.url) {
-    handleImages.value.push(res.data.url)
+// 完工照上传：自定义 http-request 走秒传预检封装（SHA-256 命中免传输）
+async function doCompleteUpload(option: any) {
+  try {
+    const { url, instant } = await uploadFile(option.file, 'order')
+    handleImages.value.push(url)
+    option.onSuccess({ code: 200, data: { url, instant } })
+  } catch (err: any) {
+    option.onError(err)
+    ElMessage.error(err?.message || '图片上传失败，请重试')
   }
 }
 
@@ -609,6 +610,9 @@ function getStatusTag(status: number) {
   }
   .header-actions .el-button {
     width: 100%;
+  }
+  .filter-card {
+    padding: 12px 12px 4px;
   }
   .table-card {
     padding: 12px 8px;

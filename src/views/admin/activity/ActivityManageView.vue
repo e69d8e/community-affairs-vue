@@ -208,10 +208,8 @@
               上传海报封面
             </el-button>
             <el-upload
-              action="/api/common/upload"
               :show-file-list="false"
-              :headers="uploadHeaders"
-              :on-success="(res: any) => form.coverImage = res.url || res.data?.url"
+              :http-request="doCoverQuickUpload"
             >
               <el-button size="small" text>快速上传</el-button>
             </el-upload>
@@ -249,6 +247,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import { uploadFile } from '@/utils/upload'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
@@ -382,9 +381,17 @@ const rules: FormRules = {
   description: [{ required: true, message: '请输入活动详情介绍', trigger: 'blur' }]
 }
 
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`
-}))
+// 快速上传封面：自定义 http-request 走秒传预检封装（SHA-256 命中免传输）
+async function doCoverQuickUpload(option: any) {
+  try {
+    const { url, instant } = await uploadFile(option.file, 'activity')
+    form.coverImage = url
+    option.onSuccess({ data: { url, instant } })
+  } catch (err: any) {
+    option.onError(err)
+    ElMessage.error(err?.message || '封面上传失败，请重试')
+  }
+}
 
 onMounted(() => {
   loadActivities()

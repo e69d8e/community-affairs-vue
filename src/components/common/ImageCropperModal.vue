@@ -135,7 +135,7 @@
 import { ref, reactive, watch, nextTick, onMounted, computed } from 'vue'
 import { UploadFilled, RefreshLeft, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
+import { uploadFile } from '@/utils/upload'
 
 const props = withDefaults(
   defineProps<{
@@ -583,17 +583,10 @@ async function confirmAndUpload() {
       }, 'image/jpeg', 0.92)
     })
 
-    // 3. 构建 FormData 上传
-    const formData = new FormData()
-    formData.append('file', blob, `crop_${Date.now()}.jpg`)
-    formData.append('folder', props.uploadFolder)
+    // 3. 上传（先做 SHA-256 秒传预检，命中则零传输直接复用已有文件）
+    const { url: finalUrl, instant } = await uploadFile(blob, props.uploadFolder, `crop_${Date.now()}.jpg`)
 
-    const res: any = await request.post('/common/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-
-    const finalUrl = res.url || res
-    ElMessage.success('图片上传成功！')
+    ElMessage.success(instant ? '秒传成功，已复用服务器相同文件！' : '图片上传成功！')
     emit('success', finalUrl)
     dialogVisible.value = false
   } catch (err: any) {
