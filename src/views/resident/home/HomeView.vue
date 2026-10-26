@@ -121,6 +121,14 @@
 
       <!-- 右侧：居民事务速览看板 (居民任务驱动中心) -->
       <div class="resident-widget-wrapper">
+        <div class="hub-header">
+          <div class="hub-title-row">
+            <span class="hub-indicator"></span>
+            <h2 class="hub-title">居民事务速览</h2>
+          </div>
+          <span class="hub-hint">进度追踪 · 凭证直达</span>
+        </div>
+
         <div class="widget-card cal-mockup-card">
           <!-- 已登录居民态 -->
           <template v-if="userStore.isLoggedIn">
@@ -987,7 +995,7 @@ function getCover(imagesJson?: string) {
    ========================================================================== */
 .portal-hub-section {
   display: grid;
-  grid-template-columns: 1.45fr 1fr;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   gap: 24px;
   align-items: stretch;
 }
@@ -996,6 +1004,7 @@ function getCover(imagesJson?: string) {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
 .hub-header {
@@ -1031,8 +1040,10 @@ function getCover(imagesJson?: string) {
 }
 
 .service-tiles-grid {
+  flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 12px;
 }
 
@@ -1124,10 +1135,12 @@ function getCover(imagesJson?: string) {
 .resident-widget-wrapper {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
 .widget-card {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1441,8 +1454,9 @@ function getCover(imagesJson?: string) {
    ========================================================================== */
 .curated-split-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   gap: 24px;
+  align-items: stretch;
 }
 
 .curated-col {
@@ -1452,12 +1466,15 @@ function getCover(imagesJson?: string) {
   border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .curated-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--cal-hairline-soft);
@@ -1491,6 +1508,8 @@ function getCover(imagesJson?: string) {
   align-items: center;
   gap: 4px;
   transition: color 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .more-link:hover {
@@ -1552,18 +1571,20 @@ function getCover(imagesJson?: string) {
   padding: 3px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--cal-hairline);
+  min-width: 0;
 }
 
 .segment-btn {
   border: none;
   background: transparent;
-  padding: 5px 12px;
+  padding: 5px 10px;
   font-size: 12px;
   font-weight: 500;
   color: var(--cal-muted);
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .segment-btn.active {
@@ -1575,6 +1596,7 @@ function getCover(imagesJson?: string) {
 
 .life-tab-content {
   flex: 1;
+  min-width: 0;
 }
 
 /* 文体活动精致横卡 */
@@ -1593,6 +1615,7 @@ function getCover(imagesJson?: string) {
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.15s ease;
+  min-width: 0;
 }
 
 .act-mini-card:hover {
@@ -1675,7 +1698,7 @@ function getCover(imagesJson?: string) {
 /* 邻里闲置 4 宫格微卡 */
 .market-mini-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -1685,6 +1708,7 @@ function getCover(imagesJson?: string) {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-width: 0;
 }
 
 .market-mini-card:hover {
@@ -1797,25 +1821,66 @@ function getCover(imagesJson?: string) {
   }
 
   .portal-hub-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
   }
 
   .curated-split-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
   }
 }
 
 @media (max-width: 640px) {
+  .greeting-title {
+    font-size: 21px;
+  }
+
+  .greeting-subtitle {
+    font-size: 12.5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 移动端保持 2 列紧凑宫格（第 5 项跨 2 列），大幅压缩金刚区高度，首屏露出个人事务速览 */
   .service-tiles-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .service-tile {
+    padding: 10px 12px;
+    gap: 10px;
   }
 
   .service-tile:last-child {
-    grid-column: span 1;
+    grid-column: span 2;
   }
 
-  .greeting-title {
-    font-size: 22px;
+  .tile-icon-wrap {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+    border-radius: 8px;
+  }
+
+  .service-tile:not(:last-child) .tile-badge {
+    display: none;
+  }
+
+  .tile-title {
+    font-size: 13.5px;
+  }
+
+  .tile-desc {
+    font-size: 11px;
+  }
+
+  .curated-header {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 </style>

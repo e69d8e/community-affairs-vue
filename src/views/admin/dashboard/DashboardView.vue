@@ -585,18 +585,22 @@ async function handlePublishNotice() {
 
 .panels-grid {
   display: grid;
-  grid-template-columns: 1.25fr 420px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 420px);
   gap: 20px;
 }
 
 .panel-card {
   padding: 24px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--cal-hairline-soft);
@@ -630,6 +634,8 @@ async function handlePublishNotice() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   padding: 12px 14px;
   background: var(--cal-surface-soft);
   border-radius: var(--radius-sm);
@@ -659,10 +665,10 @@ async function handlePublishNotice() {
 
 @media (max-width: 1200px) {
   .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .panels-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -693,7 +699,7 @@ async function handlePublishNotice() {
 
 @media (max-width: 540px) {
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 </style>

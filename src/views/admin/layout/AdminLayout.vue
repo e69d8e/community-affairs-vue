@@ -64,6 +64,13 @@
           <template #title>用户中心与权限管理</template>
         </el-menu-item>
       </el-menu>
+
+      <div v-if="!isCollapsed || mobileMenuOpen" class="sidebar-footer">
+        <button type="button" class="sidebar-logout-btn" @click="handleUserCommand('logout')">
+          <el-icon><SwitchButton /></el-icon>
+          <span>安全退出登录</span>
+        </button>
+      </div>
     </aside>
 
     <!-- 右侧主体内容容器 -->
@@ -124,6 +131,8 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                <el-dropdown-item command="portal">🏡 居民门户首页</el-dropdown-item>
+                <el-dropdown-item v-if="userStore.canViewScreen" command="screen">🖥️ 综合指挥大屏</el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出管理控制台</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -157,8 +166,10 @@ import {
   User,
   Fold,
   Expand,
-  ArrowDown
+  ArrowDown,
+  SwitchButton
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
 import NotificationPopover from '@/components/common/NotificationPopover.vue'
@@ -193,11 +204,17 @@ function handleMenuSelect() {
   }
 }
 
-function handleUserCommand(cmd: string) {
+async function handleUserCommand(cmd: string) {
+  mobileMenuOpen.value = false
   if (cmd === 'profile') {
     router.push('/user/profile')
+  } else if (cmd === 'portal') {
+    router.push('/')
+  } else if (cmd === 'screen') {
+    router.push('/screen')
   } else if (cmd === 'logout') {
-    userStore.logout()
+    await userStore.logout()
+    ElMessage.success('已安全退出登录')
     router.push('/login')
   }
 }
@@ -259,7 +276,38 @@ function getRoleTitle(role?: string) {
 .admin-menu {
   border-right: none;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 12px 8px;
+}
+
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid #1f1f1f;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid #3f1d1d;
+  background: #1a0f0f;
+  color: #f87171;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-logout-btn:hover {
+  background: #2a1414;
+  border-color: #7f1d1d;
+  color: #fca5a5;
 }
 
 :deep(.el-menu-item),
@@ -418,6 +466,9 @@ function getRoleTitle(role?: string) {
   .btn-text-mini {
     display: inline;
   }
+  .screen-btn-link {
+    display: none;
+  }
 
   /* 移动端侧边栏抽屉模式 */
   .sidebar {
@@ -454,11 +505,16 @@ function getRoleTitle(role?: string) {
     height: 56px;
     padding: 0 12px;
   }
+  .topbar-left {
+    gap: 8px;
+    min-width: 0;
+  }
   .role-badge {
     display: none;
   }
   .topbar-right {
     gap: 8px;
+    flex-shrink: 0;
   }
   .user-name {
     display: none;

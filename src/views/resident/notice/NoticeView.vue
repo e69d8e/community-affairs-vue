@@ -342,8 +342,18 @@ function getNoticeBadgeClass(type: number) {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+    width: 100%;
+  }
+  .notice-title {
+    width: 100%;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.45;
   }
   .notice-meta {
+    width: 100%;
     flex-wrap: wrap;
     gap: 10px;
     font-size: 12px;

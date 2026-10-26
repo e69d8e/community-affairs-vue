@@ -19,6 +19,15 @@
               <span class="cal-badge cal-badge-emerald role-pill">
                 {{ getRoleName(userStore.user?.role) }}
               </span>
+              <button
+                type="button"
+                class="identity-logout-pill"
+                title="安全退出登录"
+                @click="handleLogout"
+              >
+                <el-icon><SwitchButton /></el-icon>
+                <span>退出</span>
+              </button>
             </div>
             <p class="username-text">@{{ userStore.user?.username }} · {{ userStore.user?.phone || '未绑手机' }}</p>
             <p class="reg-time-text">注册于 {{ formatRegDate(userStore.user?.createTime) }}</p>
@@ -47,6 +56,9 @@
           </el-button>
           <el-button size="small" class="flex-1" :icon="Lock" @click="switchTab('security')">
             修改密码
+          </el-button>
+          <el-button size="small" type="danger" plain :icon="SwitchButton" @click="handleLogout">
+            退出
           </el-button>
         </div>
       </div>
@@ -350,6 +362,17 @@
             </div>
           </div>
         </div>
+
+        <!-- E. 底部账号安全退出栏 -->
+        <div class="account-logout-bar">
+          <div class="logout-bar-info">
+            <span class="logout-bar-title">当前登录账号：{{ userStore.user?.username }}</span>
+            <span class="logout-bar-sub">如需切换其他居民或工作人员账号，可安全退出</span>
+          </div>
+          <el-button type="danger" plain :icon="SwitchButton" class="logout-bar-btn" @click="handleLogout">
+            安全退出登录
+          </el-button>
+        </div>
       </div>
 
       <!-- 2. 专项视图：我的房产与认证 (Houses) -->
@@ -459,6 +482,16 @@
               </el-button>
             </el-form>
           </div>
+        </div>
+
+        <div class="account-logout-bar" style="margin-top: 20px">
+          <div class="logout-bar-info">
+            <span class="logout-bar-title">退出当前账号登录</span>
+            <span class="logout-bar-sub">退出后将清除本机登录凭证并返回登录页</span>
+          </div>
+          <el-button type="danger" plain :icon="SwitchButton" class="logout-bar-btn" @click="handleLogout">
+            安全退出登录
+          </el-button>
         </div>
       </div>
 
@@ -682,7 +715,8 @@ import {
   Medal,
   CircleCheckFilled,
   EditPen,
-  Lock
+  Lock,
+  SwitchButton
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
@@ -702,6 +736,12 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const noticeStore = useNoticeStore()
+
+async function handleLogout() {
+  await userStore.logout()
+  ElMessage.success('已安全退出登录')
+  router.push('/login')
+}
 
 // 支持的视图：overview (默认) | houses | security | orders | tickets | market | chat | notices
 function resolveInitialTab(qTab?: string): string {
@@ -726,6 +766,10 @@ function switchTab(tab: string) {
   activeTab.value = tab
   router.replace({ query: { ...route.query, tab: tab === 'overview' ? undefined : tab } })
   handleTabActivated(tab)
+  nextTick(() => {
+    const activeBtn = document.querySelector('.sidebar-nav .sidebar-nav-item.active') as HTMLElement | null
+    activeBtn?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+  })
 }
 
 function handleTabActivated(tab: string) {
@@ -1679,9 +1723,15 @@ function getNoticeActionHint(item: UserNotice) {
   border-color: var(--cal-ink);
 }
 
+.notice-main {
+  flex: 1;
+  min-width: 0;
+}
+
 .notice-title-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 4px;
 }
@@ -1691,17 +1741,20 @@ function getNoticeActionHint(item: UserNotice) {
   height: 8px;
   border-radius: 50%;
   background: #ef4444;
+  flex-shrink: 0;
 }
 
 .notice-title {
   font-size: 14px;
   font-weight: 700;
   color: var(--cal-ink);
+  word-break: break-word;
 }
 
 .notice-summary {
   font-size: 13px;
   color: var(--cal-muted);
+  word-break: break-word;
 }
 
 .notice-right {
@@ -1823,22 +1876,163 @@ function getNoticeActionHint(item: UserNotice) {
   color: #10b981;
 }
 
+.identity-logout-pill {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.identity-logout-pill:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.account-logout-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #fee2e2;
+  background: #fffafa;
+}
+
+.logout-bar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logout-bar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cal-ink);
+}
+
+.logout-bar-sub {
+  font-size: 12px;
+  color: var(--cal-muted);
+}
+
 @media (max-width: 960px) {
   .user-profile-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
   .profile-sidebar {
     position: static;
+    gap: 10px;
+    min-width: 0;
+  }
+  /* 移动端将 8 项纵向菜单转化为单行横向滑动胶囊导航，释放 400px+ 首屏高度 */
+  .sidebar-nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .nav-group-label {
+    display: none;
+  }
+  .sidebar-nav-item {
+    width: auto;
+    white-space: nowrap;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    gap: 6px;
+    background: var(--cal-surface-soft);
+    border: 1px solid var(--cal-hairline-soft);
+    flex-shrink: 0;
+  }
+  .sidebar-nav-item.active {
+    background: var(--cal-ink);
+    border-color: var(--cal-ink);
+    color: #ffffff;
+  }
+  .profile-workspace {
+    padding: 16px 14px !important;
+    min-height: auto;
+    min-width: 0;
+  }
+  .workbench-section {
+    padding: 14px;
+  }
+  .section-header,
+  .panel-header-bar {
+    flex-wrap: wrap;
+    gap: 10px;
   }
   .profile-form-grid {
     grid-template-columns: 1fr;
   }
   .metrics-tiles-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
   .houses-grid,
   .settings-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reg-time-text,
+  .identity-quick-btns {
+    display: none;
+  }
+  .account-logout-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+  }
+  .logout-bar-btn {
+    width: 100%;
+  }
+  .notice-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .notice-main {
+    width: 100%;
+  }
+  .notice-right {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding-top: 8px;
+    border-top: 1px dashed var(--cal-hairline-soft);
+  }
+  .notice-time {
+    margin-bottom: 0;
   }
 }
 </style>

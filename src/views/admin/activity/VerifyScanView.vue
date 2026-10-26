@@ -280,7 +280,7 @@ async function handleVerify() {
 
 .verify-layout {
   display: grid;
-  grid-template-columns: 460px 1fr;
+  grid-template-columns: 460px minmax(0, 1fr);
   gap: 24px;
 }
 
@@ -289,6 +289,7 @@ async function handleVerify() {
   border-radius: 14px;
   border: 1px solid #e2e8f0;
   padding: 28px;
+  min-width: 0;
 }
 
 .card-title {
@@ -503,7 +504,18 @@ async function handleVerify() {
 
 @media (max-width: 960px) {
   .verify-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .verify-card,
+  .result-card {
+    padding: 18px 14px;
   }
 }
 </style>

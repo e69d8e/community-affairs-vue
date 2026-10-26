@@ -635,6 +635,11 @@ a {
    10. Global Mobile Adaptations & Responsive Overrides (<= 768px)
    ========================================================================== */
 @media (max-width: 768px) {
+  html {
+    scroll-padding-top: 72px;
+    scroll-padding-bottom: 72px;
+  }
+
   /* Typography Scaling for Mobile */
   .cal-display-xl {
     font-size: 32px !important;
@@ -655,12 +660,27 @@ a {
     line-height: 1.3 !important;
   }
 
-  /* Modals & Dialogs Auto-Adapt to Viewport */
+  /* Modals, Drawers & Dialogs Auto-Adapt to Viewport */
   .el-dialog {
     width: 92vw !important;
     max-width: 92vw !important;
     margin: 16px auto !important;
     border-radius: var(--radius-lg) !important;
+  }
+  .el-drawer:not(.mobile-nav-drawer) {
+    width: 92vw !important;
+    max-width: 92vw !important;
+  }
+  .el-drawer.mobile-nav-drawer {
+    max-width: 86vw !important;
+  }
+  .el-drawer__header {
+    padding: 14px 16px !important;
+    margin-bottom: 0 !important;
+  }
+  .el-drawer__body {
+    padding: 16px !important;
+    -webkit-overflow-scrolling: touch;
   }
   .el-dialog__header {
     padding: 16px 18px !important;

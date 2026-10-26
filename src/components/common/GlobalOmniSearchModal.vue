@@ -27,7 +27,10 @@
         <div class="search-right-actions">
           <span v-if="loading" class="searching-spinner"><el-icon class="is-loading"><Loading /></el-icon></span>
           <span v-else-if="query" class="clear-btn" @click="query = ''; searchImmediate()">清空</span>
-          <span class="esc-badge">ESC</span>
+          <button type="button" class="esc-badge" title="关闭搜索面板 (ESC)" @click="close">
+            <span class="esc-text-desktop">ESC</span>
+            <span class="esc-text-mobile">关闭</span>
+          </button>
         </div>
       </div>
 
@@ -585,8 +588,18 @@ defineExpose({
   color: #6b7280;
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.esc-badge:hover {
+  background: #e5e7eb;
+  color: #111111;
+}
+.esc-text-mobile {
+  display: none;
 }
 
 /* Tabs Bar */
@@ -936,6 +949,52 @@ defineExpose({
   color: #854d0e;
   padding: 0 2px;
   border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .omni-input-header {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .omni-native-input {
+    font-size: 15px;
+    min-width: 0;
+  }
+  .esc-text-desktop {
+    display: none;
+  }
+  .esc-text-mobile {
+    display: inline;
+  }
+  .omni-tabs-bar {
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .omni-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-pill {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .omni-results-body {
+    padding: 12px 14px;
+    max-height: 60vh;
+  }
+  .quick-links-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .omni-footer {
+    justify-content: center;
+    padding: 8px 14px;
+  }
+  .kbd-shortcuts {
+    display: none;
+  }
 }
 </style>
 

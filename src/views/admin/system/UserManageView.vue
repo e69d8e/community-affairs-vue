@@ -383,4 +383,22 @@ function getRoleTagType(role?: string) {
   font-weight: 800;
   color: #16a34a;
 }
+
+@media (max-width: 768px) {
+  .filter-bar {
+    padding: 12px 14px;
+  }
+  .search-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .search-actions :deep(.el-input) {
+    flex: 1;
+    min-width: 150px;
+    width: auto !important;
+  }
+  .table-card {
+    padding: 12px 10px;
+  }
+}
 </style>

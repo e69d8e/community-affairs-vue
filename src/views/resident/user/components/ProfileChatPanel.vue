@@ -10,7 +10,7 @@
       </el-button>
     </div>
 
-    <div class="chat-tab-container">
+    <div :class="['chat-tab-container', { 'mobile-chat-active': mobileShowChat }]">
       <!-- 左侧会话列表 -->
       <div class="session-list-panel">
         <div class="session-panel-header">
@@ -31,7 +31,7 @@
             v-for="s in chatSessions"
             :key="s.sessionId"
             :class="['session-card', { active: currentSession?.sessionId === s.sessionId }]"
-            @click="selectSession(s)"
+            @click="selectSession(s, true)"
           >
             <div class="session-avatar-col">
               <el-avatar :size="40" :src="s.otherUserAvatar || defaultAvatar" />
@@ -57,6 +57,14 @@
         <template v-if="currentSession">
           <div class="chat-header-bar">
             <div class="chat-target-user">
+              <button
+                type="button"
+                class="mobile-chat-back-btn"
+                aria-label="返回会话列表"
+                @click="mobileShowChat = false"
+              >
+                ← 列表
+              </button>
               <el-avatar :size="36" :src="currentSession.otherUserAvatar || defaultAvatar" />
               <div class="target-user-info">
                 <div class="name-badge-row">
@@ -190,6 +198,7 @@ const userStore = useUserStore()
 const chatSessions = ref<ChatSession[]>([])
 const loadingSessions = ref(false)
 const currentSession = ref<ChatSession | null>(null)
+const mobileShowChat = ref(false)
 const sessionMessages = ref<ChatMessage[]>([])
 const loadingMessages = ref(false)
 const chatInput = ref('')
@@ -259,15 +268,18 @@ async function loadChatSessions(targetHint?: { bizId?: string; title?: string; s
     }
 
     if (matched) {
-      await selectSession(matched)
+      await selectSession(matched, !!(targetHint || route.query.sessionId))
     } else if (!currentSession.value) {
-      await selectSession(chatSessions.value[0])
+      await selectSession(chatSessions.value[0], false)
     }
   }
 }
 
-async function selectSession(session: ChatSession) {
+async function selectSession(session: ChatSession, openMobileDetail = false) {
   currentSession.value = session
+  if (openMobileDetail) {
+    mobileShowChat.value = true
+  }
   loadingMessages.value = true
   try {
     const res: any = await request.get('/chat/messages', {
@@ -522,12 +534,35 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-chat-back-btn {
+  display: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--cal-hairline);
+  background: var(--cal-surface-soft);
+  color: var(--cal-ink);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .chat-target-user {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.target-user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .name-badge-row {
@@ -545,6 +580,9 @@ defineExpose({
 .session-item-brief {
   font-size: 12px;
   color: var(--cal-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-flow-area {
@@ -670,16 +708,32 @@ defineExpose({
 
 @media (max-width: 768px) {
   .chat-tab-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
   }
-  .session-list-panel {
-    max-height: 220px;
+  .chat-tab-container:not(.mobile-chat-active) .chat-main-panel {
+    display: none;
+  }
+  .chat-tab-container:not(.mobile-chat-active) .session-list-panel {
+    max-height: 440px;
     border-right: none;
-    border-bottom: 1px solid var(--cal-hairline);
+    border-bottom: none;
+  }
+  .chat-tab-container.mobile-chat-active .session-list-panel {
+    display: none;
+  }
+  .chat-tab-container.mobile-chat-active .chat-main-panel {
+    display: flex;
+  }
+  .mobile-chat-back-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  .chat-header-bar {
+    padding: 10px 12px;
   }
   .chat-flow-area {
-    height: 300px;
+    height: 340px;
   }
 }
 </style>

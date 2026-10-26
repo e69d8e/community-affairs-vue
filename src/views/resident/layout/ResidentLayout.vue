@@ -203,7 +203,7 @@
 
         <!-- 用户身份卡片 -->
         <div v-if="userStore.isLoggedIn" class="drawer-user-card" @click="navTo('/user/profile')">
-          <el-avatar :size="46" :src="userStore.user?.avatar" class="cal-avatar" />
+          <el-avatar :size="44" :src="userStore.user?.avatar" class="cal-avatar" />
           <div class="drawer-user-info">
             <div class="drawer-user-name">{{ userStore.user?.realName || userStore.user?.username }}</div>
             <div class="drawer-user-meta">
@@ -211,6 +211,15 @@
               <span class="drawer-credit">信用分 <strong>{{ userStore.user?.creditScore || 100 }}</strong></span>
             </div>
           </div>
+          <button
+            type="button"
+            class="drawer-quick-logout-btn"
+            title="安全退出登录"
+            @click.stop="handleLogout"
+          >
+            <el-icon><SwitchButton /></el-icon>
+            <span>退出</span>
+          </button>
         </div>
         <div v-else class="drawer-login-card">
           <p class="drawer-login-tip">登录体验智慧社区完整便民服务</p>
@@ -220,60 +229,62 @@
           </div>
         </div>
 
-        <!-- 快捷功能直通菜单 -->
-        <div class="drawer-section">
-          <div class="drawer-section-title">便民服务直达</div>
-          <div class="drawer-nav-list">
-            <div class="drawer-nav-item" @click="navTo('/')">
-              <span class="item-icon">🏡</span>
-              <span class="item-name">社区门户首页</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/notices')">
-              <span class="item-icon">📢</span>
-              <span class="item-name">重要公告与应急通报</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/orders/submit?type=1')">
-              <span class="item-icon">🛠️</span>
-              <span class="item-name">提报设施故障报修</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/orders/submit?type=2')">
-              <span class="item-icon">📝</span>
-              <span class="item-name">邻里诉求与物业建议</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/activities')">
-              <span class="item-icon">🎫</span>
-              <span class="item-name">社区文体与公益报名</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/market')">
-              <span class="item-icon">🛍️</span>
-              <span class="item-name">邻里闲置互助集市</span>
+        <div class="drawer-scroll-body">
+          <!-- 快捷功能直通菜单 -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">便民服务直达</div>
+            <div class="drawer-nav-list">
+              <div class="drawer-nav-item" @click="navTo('/')">
+                <span class="item-icon">🏡</span>
+                <span class="item-name">社区门户首页</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/notices')">
+                <span class="item-icon">📢</span>
+                <span class="item-name">重要公告与应急通报</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/orders/submit?type=1')">
+                <span class="item-icon">🛠️</span>
+                <span class="item-name">提报设施故障报修</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/orders/submit?type=2')">
+                <span class="item-icon">📝</span>
+                <span class="item-name">邻里诉求与物业建议</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/activities')">
+                <span class="item-icon">🎫</span>
+                <span class="item-name">社区文体与公益报名</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/market')">
+                <span class="item-icon">🛍️</span>
+                <span class="item-name">邻里闲置互助集市</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 个人中心与管理直达 -->
-        <div v-if="userStore.isLoggedIn" class="drawer-section">
-          <div class="drawer-section-title">居民中心与管理后台</div>
-          <div class="drawer-nav-list">
-            <div v-if="userStore.canViewScreen" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
-              <span class="item-icon">🖥️</span>
-              <span class="item-name">智慧治理综合指挥大屏</span>
-            </div>
-            <div v-if="userStore.canAccessAdmin" class="drawer-nav-item highlight-item" @click="navTo('/admin/dashboard')">
-              <span class="item-icon">📊</span>
-              <span class="item-name">管理工作台控制台</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/user/profile')">
-              <span class="item-icon">👤</span>
-              <span class="item-name">个人概览与资料</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/user/profile?tab=tickets')">
-              <span class="item-icon">🎟️</span>
-              <span class="item-name">我的入场凭证与闲置</span>
-            </div>
-            <div class="drawer-nav-item" @click="navTo('/user/profile?tab=orders')">
-              <span class="item-icon">📋</span>
-              <span class="item-name">我的工单办理历史</span>
+          <!-- 个人中心与管理直达 -->
+          <div v-if="userStore.isLoggedIn" class="drawer-section">
+            <div class="drawer-section-title">居民中心与管理后台</div>
+            <div class="drawer-nav-list">
+              <div v-if="userStore.canViewScreen" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
+                <span class="item-icon">🖥️</span>
+                <span class="item-name">智慧治理综合指挥大屏</span>
+              </div>
+              <div v-if="userStore.canAccessAdmin" class="drawer-nav-item highlight-item" @click="navTo('/admin/dashboard')">
+                <span class="item-icon">📊</span>
+                <span class="item-name">管理工作台控制台</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/user/profile')">
+                <span class="item-icon">👤</span>
+                <span class="item-name">个人概览与资料</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/user/profile?tab=tickets')">
+                <span class="item-icon">🎟️</span>
+                <span class="item-name">我的入场凭证与闲置</span>
+              </div>
+              <div class="drawer-nav-item" @click="navTo('/user/profile?tab=orders')">
+                <span class="item-icon">📋</span>
+                <span class="item-name">我的工单办理历史</span>
+              </div>
             </div>
           </div>
         </div>
@@ -285,7 +296,7 @@
             <div class="hotline-item">👮 网格联络：<strong>13800000004</strong></div>
           </div>
           <div v-if="userStore.isLoggedIn" class="logout-btn-wrap">
-            <el-button type="danger" plain size="small" class="w-full" :icon="SwitchButton" @click="handleLogout">
+            <el-button type="danger" plain size="default" class="w-full" :icon="SwitchButton" @click="handleLogout">
               安全退出登录
             </el-button>
           </div>
@@ -386,6 +397,7 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .brand {
@@ -396,19 +408,19 @@ async function handleLogout() {
   flex-shrink: 0;
 }
 .brand-icon {
-  font-size: 26px;
+  font-size: 25px;
 }
 .brand-title {
   display: block;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16.5px;
   font-weight: 600;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   color: var(--cal-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: 180px;
 }
 .brand-sub {
   display: block;
@@ -424,12 +436,15 @@ async function handleLogout() {
 }
 .nav-item {
   text-decoration: none;
+  padding: 6px 12px;
+  font-size: 13.5px;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .cal-search-trigger-btn {
@@ -837,17 +852,18 @@ async function handleLogout() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
-  padding: 20px 16px calc(24px + env(safe-area-inset-bottom)) 16px;
+  overflow: hidden;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom)) 16px;
 }
 
 .drawer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--cal-hairline);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
 }
 
 .drawer-brand {
@@ -872,13 +888,35 @@ async function handleLogout() {
 .drawer-user-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 11px 12px;
   background: var(--cal-surface-soft);
   border-radius: var(--radius-md);
   border: 1px solid var(--cal-hairline);
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.drawer-quick-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.drawer-quick-logout-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
 }
 
 .drawer-user-info {
@@ -911,11 +949,12 @@ async function handleLogout() {
 }
 
 .drawer-login-card {
-  padding: 16px;
+  padding: 14px;
   background: var(--cal-surface-soft);
   border-radius: var(--radius-md);
   border: 1px solid var(--cal-hairline);
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
 }
 
 .drawer-login-tip {
@@ -931,8 +970,16 @@ async function handleLogout() {
   gap: 8px;
 }
 
+.drawer-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+
 .drawer-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .drawer-section-title {
@@ -941,21 +988,21 @@ async function handleLogout() {
   color: var(--cal-muted-soft);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   padding-left: 6px;
 }
 
 .drawer-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .drawer-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border-radius: var(--radius-md);
   color: var(--cal-body);
   font-size: 13px;
@@ -976,15 +1023,16 @@ async function handleLogout() {
 
 .drawer-footer-info {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--cal-hairline);
+  flex-shrink: 0;
 }
 
 .hotline-card {
   font-size: 12px;
   color: var(--cal-muted);
-  line-height: 1.8;
-  margin-bottom: 12px;
+  line-height: 1.65;
+  margin-bottom: 10px;
 }
 
 .w-full {

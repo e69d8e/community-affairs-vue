@@ -83,14 +83,19 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function logout() {
-    try {
-      await request.post('/auth/logout')
-    } catch (ignored) {}
+    const oldToken = token.value
+    // 先清本地登录态，保证无论网络如何都能立即退出（原实现先 await 后端，弱网下最长卡 15s 超时）
     token.value = ''
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     stompService.disconnect()
+    if (oldToken) {
+      // 后台通知服务端注销 token，不阻塞页面跳转
+      request
+        .post('/auth/logout', null, { headers: { Authorization: `Bearer ${oldToken}` } })
+        .catch(() => {})
+    }
   }
 
   return {
