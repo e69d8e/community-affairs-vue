@@ -1,7 +1,8 @@
 # 智慧社区综合事务管理系统 (前端工程)
 
 > **本科毕业设计选题**：《基于SpringBoot的社区综合事务管理系统的设计与实现》  
-> **工程定位**：采用单仓双门户（Dual-Portal）与 16:9 独立指挥大屏架构，整合居民便民自服务门户、中后台综合事务治理控制台与科技感全屏数据驾驶舱。
+> **工程定位**：采用单仓双门户（Dual-Portal）与 16:9 独立指挥大屏架构，整合居民便民自服务门户、中后台综合事务治理控制台与科技感全屏数据驾驶舱。  
+> **后端配套服务**：[community-affairs](https://github.com/e69d8e/community-affairs)（Spring Boot 3.4 + MySQL 8.4 + Redis + Elasticsearch + MinIO）
 
 ---
 
@@ -115,15 +116,17 @@ community-affairs-vue/
 
 ## 四、 本地开发与构建部署
 
-### 1. 安装项目依赖
-本项目使用 `pnpm` 作为包管理工具：
+### 1. 环境准备与依赖安装
+本项目基于 Node.js 现代生态（推荐 Node.js >= 18.18 / 20+），并统一使用 `pnpm` 作为包管理工具：
 ```bash
-cd /Users/li/Code/JS/VueProjects/community-affairs-vue
+# 克隆并进入前端工程目录
+git clone https://github.com/e69d8e/community-affairs-vue.git
+cd community-affairs-vue
 
 # 安装依赖
 pnpm install
 
-# 授权构建脚本 (pnpm v11 规范)
+# 授权构建脚本 (pnpm v11 规范，esbuild/vue-demi 等已声明在 pnpm-workspace.yaml)
 pnpm approve-builds --all
 ```
 
@@ -139,11 +142,13 @@ pnpm dev
 
 > **本地代理转发机制**：开发服务器通过 `vite.config.ts` 自动将 `/api` 请求与 `/ws` WebSocket 握手代理转发至后端 `http://localhost:8082`。
 
-### 3. 生产打包构建与类型校验
+### 3. 生产打包构建与部署联动
 ```bash
-pnpm run build
+pnpm build
 ```
 执行通过 `vue-tsc -b` 进行严格的 TypeScript 语法与类型校验，并在 `dist/` 目录下生成静态生产资源。
+
+> 💡 **生产部署联动说明**：若配合后端 Nginx 全容器环境使用，在执行 `pnpm build` 后将 `dist/` 目录下的内容直接覆盖至后端仓库的 `./html/` 目录即可。Nginx 静态直出，浏览器刷新即刻生效，无需重启任何 Docker 容器。
 
 ---
 
