@@ -44,6 +44,46 @@
           </div>
         </div>
 
+        <!-- AI 智能帮我填报卡片 -->
+        <div class="ai-smart-fill-card">
+          <div class="ai-fill-header" @click="toggleAiInput">
+            <div class="header-left">
+              <span class="sparkle-icon">✨</span>
+              <span class="ai-title">AI 智能帮我填报</span>
+              <span class="ai-pill">口语化/一句话自动结构化</span>
+            </div>
+            <el-button link type="primary" size="small" class="toggle-btn">
+              {{ showAiInput ? '收起' : '展开体验' }}
+              <el-icon class="el-icon--right"><component :is="showAiInput ? ArrowUp : ArrowDown" /></el-icon>
+            </el-button>
+          </div>
+          <el-collapse-transition>
+            <div v-show="showAiInput" class="ai-fill-body">
+              <el-input
+                v-model="aiRawInput"
+                type="textarea"
+                :rows="2"
+                placeholder="例如：“我家阳台顶上的水管突然爆开了，水一直在往外喷，洗衣机插座都快被淋到了，很危险赶紧来修！”"
+                resize="none"
+              />
+              <div class="ai-fill-actions">
+                <span class="ai-tip">🤖 AI 将自动推断分类、规范工单标题、判定紧急程度并润色详细正文</span>
+                <el-button
+                  type="primary"
+                  size="small"
+                  :loading="aiParsing"
+                  :disabled="!aiRawInput.trim()"
+                  class="ai-parse-btn"
+                  @click="handleAiParse"
+                >
+                  <el-icon><MagicStick /></el-icon>
+                  一键智能填报
+                </el-button>
+              </div>
+            </div>
+          </el-collapse-transition>
+        </div>
+
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12">
             <el-form-item label="故障或事务分类" prop="category">
@@ -167,11 +207,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Plus, Crop, Close, Back, User } from '@element-plus/icons-vue'
+import { Plus, Crop, Close, Back, User, ArrowUp, ArrowDown, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type UploadProps } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import request from '@/utils/request'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
+import { parseOrderText } from '@/api/ai'
 
 const router = useRouter()
 const route = useRoute()
@@ -239,6 +280,68 @@ function applyPreset(p: any) {
     form.isUrgent = p.isUrgent
   }
   ElMessage.info(`已应用快捷模板：${p.label}`)
+}
+
+const showAiInput = ref(true)
+const aiRawInput = ref('')
+const aiParsing = ref(false)
+
+function toggleAiInput() {
+  showAiInput.value = !showAiInput.value
+}
+
+async function handleAiParse() {
+  const text = aiRawInput.value.trim()
+  if (!text) return
+  aiParsing.value = true
+  try {
+    const res = await parseOrderText(text)
+    const data = res
+    if (data && data.title) {
+      form.title = data.title
+      form.content = data.standardContent
+      if (data.isUrgent !== undefined) {
+        form.isUrgent = data.isUrgent
+      }
+      if (form.orderType === 1) {
+        if (data.category.includes('水') || data.category.includes('给排水')) {
+          form.category = '水电管道管网'
+        } else if (data.category.includes('电梯')) {
+          form.category = '电梯运行维保'
+        } else if (data.category.includes('门禁') || data.category.includes('安防')) {
+          form.category = '门禁道闸系统'
+        } else if (data.category.includes('照明') || data.category.includes('强电') || data.category.includes('弱电')) {
+          form.category = '楼道公共照明'
+        } else if (data.category.includes('卫生') || data.category.includes('绿化')) {
+          form.category = '绿化及路面设施'
+        } else {
+          form.category = '其他公用部位'
+        }
+      } else {
+        if (data.category.includes('车') || data.category.includes('停')) {
+          form.category = '违规停放车辆'
+        } else if (data.category.includes('电') || data.category.includes('充')) {
+          form.category = '电动车飞线充电'
+        } else if (data.category.includes('噪音') || data.category.includes('吵')) {
+          form.category = '深夜噪音扰民'
+        } else if (data.category.includes('狗') || data.category.includes('宠')) {
+          form.category = '宠物未拴绳纠纷'
+        } else if (data.category.includes('垃圾') || data.category.includes('卫生') || data.category.includes('抛物')) {
+          form.category = '高空抛物与卫生'
+        } else {
+          form.category = '物业服务意见'
+        }
+      }
+      ElMessage.success({
+        message: `✨ AI 智能解析完成！${data.isUrgent === 1 ? '⚠️ 检测为紧急险情已置顶加急。' : ''}（理由：${data.urgentReason}）`,
+        duration: 4000
+      })
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || 'AI 智能解析失败，请重试')
+  } finally {
+    aiParsing.value = false
+  }
 }
 
 const form = reactive({
@@ -372,6 +475,74 @@ async function handleSubmit() {
   font-size: 13px;
   color: var(--cal-muted);
   margin-top: 6px;
+}
+
+/* AI 智能填报卡片 */
+.ai-smart-fill-card {
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.08);
+}
+
+.ai-fill-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(239, 246, 255, 0.6);
+  border-bottom: 1px solid rgba(191, 219, 254, 0.5);
+}
+
+.ai-fill-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sparkle-icon {
+  font-size: 16px;
+}
+
+.ai-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.ai-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.ai-fill-body {
+  padding: 14px 16px;
+}
+
+.ai-fill-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.ai-tip {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.ai-parse-btn {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  font-weight: 600;
 }
 
 /* 快捷模板栏 */

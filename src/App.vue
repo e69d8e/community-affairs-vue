@@ -2,8 +2,8 @@
   <el-config-provider :locale="zhCn">
     <router-view />
 
-    <!-- 全局一键回到顶部悬浮钮 -->
-    <el-backtop :right="26" :bottom="32" class="cal-backtop" />
+    <!-- 全局一键回到顶部悬浮钮（位于 AI 悬浮球上方，避免重叠遮挡） -->
+    <el-backtop :right="28" :bottom="86" class="cal-backtop" />
 
     <!-- 突发应急通告置顶全屏弹窗 -->
     <el-dialog

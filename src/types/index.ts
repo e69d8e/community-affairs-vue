@@ -316,3 +316,39 @@ export interface ChatSession {
   lastTime: string
   unreadCount: number
 }
+
+// AI 智能助手与分析相关类型
+export interface AiOrderParseResult {
+  title: string
+  category: string
+  isUrgent: number
+  urgentReason: string
+  standardContent: string
+}
+
+export interface AiOrderTriageResult {
+  faultDiagnosis: string
+  maintenanceTips: string
+  recommendedRole: string
+  estimatedHours: number
+  suggestedAuditRemark: string
+}
+
+export interface AiActionCard {
+  type: string
+  target: string
+  title: string
+  desc: string
+  btnText: string
+  icon?: string
+}
+
+export interface AiChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  card?: AiActionCard
+  time: string
+  loading?: boolean
+  createTime?: string
+}

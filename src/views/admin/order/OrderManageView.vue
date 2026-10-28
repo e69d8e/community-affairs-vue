@@ -126,7 +126,7 @@
     </div>
 
     <!-- 初审与派工弹窗 -->
-    <el-dialog v-model="showAuditModal" title="工单初审与师傅指派" width="520px">
+    <el-dialog v-model="showAuditModal" title="工单初审与师傅指派" width="580px">
       <el-form label-width="100px">
         <el-form-item label="工单编号">
           <span>#{{ currentOrder?.orderNo }} · <strong>{{ currentOrder?.title }}</strong></span>
@@ -134,6 +134,57 @@
         <el-form-item label="事项内容">
           <p class="dialog-desc">{{ currentOrder?.content }}</p>
         </el-form-item>
+
+        <!-- AI 智能初审分诊研判面板 -->
+        <div class="ai-triage-panel">
+          <div class="ai-panel-header">
+            <div class="header-left">
+              <span class="ai-icon">🤖</span>
+              <span class="ai-title">AI 智能分诊与派单研判</span>
+            </div>
+            <el-button
+              size="small"
+              type="primary"
+              plain
+              :loading="aiTriaging"
+              @click="runAiTriage"
+            >
+              {{ aiTriageResult ? '🔄 重新研判' : '✨ 生成 AI 研判分析' }}
+            </el-button>
+          </div>
+
+          <div v-if="aiTriageResult" class="ai-panel-body">
+            <div class="triage-row">
+              <span class="row-label">🔍 故障成因：</span>
+              <span class="row-val">{{ aiTriageResult.faultDiagnosis }}</span>
+            </div>
+            <div class="triage-row">
+              <span class="row-label">🛠️ 排查要点：</span>
+              <span class="row-val">{{ aiTriageResult.maintenanceTips }}</span>
+            </div>
+            <div class="triage-meta-bar">
+              <div class="meta-item">
+                <span class="row-label">👷 建议工种：</span>
+                <el-tag size="small" type="success" effect="plain">{{ aiTriageResult.recommendedRole }}</el-tag>
+              </div>
+              <div class="meta-item">
+                <span class="row-label">⏱️ 预估工期：</span>
+                <span class="font-semibold">{{ aiTriageResult.estimatedHours }} 小时</span>
+              </div>
+            </div>
+            <div class="triage-remark-card">
+              <div class="remark-title-row">
+                <span class="remark-label">📝 建议审核批注：</span>
+                <el-button link type="primary" size="small" @click="applyAiRemark">一键采用到输入框</el-button>
+              </div>
+              <div class="remark-content">{{ aiTriageResult.suggestedAuditRemark }}</div>
+            </div>
+          </div>
+          <div v-else-if="!aiTriaging" class="ai-panel-empty">
+            点击上方按钮，AI 将综合工单分类、现场照片及故障描述生成专业维修建议与审核批注。
+          </div>
+        </div>
+
         <el-form-item label="审核结论">
           <el-radio-group v-model="auditDecision">
             <el-radio :value="1">通过并指派师傅</el-radio>
@@ -161,6 +212,9 @@
           </el-form-item>
           <el-form-item label="师傅联系电话">
             <el-input v-model="handlerPhone" placeholder="师傅手机号" />
+          </el-form-item>
+          <el-form-item label="派单批注">
+            <el-input v-model="auditRemark" type="textarea" :rows="2" placeholder="可填写指派师傅的指导批注或排查要点（可选）" />
           </el-form-item>
         </template>
         <template v-else>
@@ -266,7 +320,8 @@ import request from '@/utils/request'
 import { uploadFile } from '@/utils/upload'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
-import type { WorkOrder } from '@/types'
+import type { WorkOrder, AiOrderTriageResult } from '@/types'
+import { triageWorkOrder } from '@/api/ai'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -386,12 +441,54 @@ function resetFilter() {
   loadOrders()
 }
 
+const aiTriageResult = ref<AiOrderTriageResult | null>(null)
+const aiTriaging = ref(false)
+
+async function runAiTriage() {
+  if (!currentOrder.value) return
+  aiTriaging.value = true
+  try {
+    let images: string[] = []
+    if (currentOrder.value.images) {
+      try {
+        images = JSON.parse(currentOrder.value.images)
+      } catch {}
+    }
+    const res = await triageWorkOrder({
+      orderId: currentOrder.value.id,
+      title: currentOrder.value.title,
+      orderType: currentOrder.value.orderType,
+      category: currentOrder.value.category,
+      content: currentOrder.value.content,
+      images,
+      isUrgent: currentOrder.value.isUrgent
+    })
+    const data = res
+    if (data && data.faultDiagnosis) {
+      aiTriageResult.value = data
+      ElMessage.success('✨ AI 智能分诊研判分析完成！')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || 'AI 研判失败')
+  } finally {
+    aiTriaging.value = false
+  }
+}
+
+function applyAiRemark() {
+  if (aiTriageResult.value?.suggestedAuditRemark) {
+    auditRemark.value = aiTriageResult.value.suggestedAuditRemark
+    ElMessage.success('已一键采用 AI 建议的审核批注！')
+  }
+}
+
 function openAuditModal(row: WorkOrder) {
   currentOrder.value = row
   auditDecision.value = 1
   handlerName.value = row.orderType === 2 ? '陈网格员' : '张建国'
   handlerPhone.value = row.orderType === 2 ? '13800000004' : '13800138001'
   auditRemark.value = ''
+  aiTriageResult.value = null
   showAuditModal.value = true
 }
 
@@ -618,5 +715,108 @@ function getStatusTag(status: number) {
     padding: 12px 8px;
     overflow-x: auto;
   }
+}
+
+/* AI 智能分诊研判面板 */
+.ai-triage-panel {
+  margin: 0 0 18px 20px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(240, 253, 244, 0.85);
+  border-bottom: 1px solid #dcfce7;
+}
+
+.ai-panel-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-icon {
+  font-size: 16px;
+}
+
+.ai-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #166534;
+}
+
+.ai-panel-body {
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.triage-row {
+  line-height: 1.5;
+}
+
+.row-label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.row-val {
+  color: #0f172a;
+}
+
+.triage-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 0;
+  border-top: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.triage-remark-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.remark-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.remark-label {
+  font-weight: 600;
+  color: #15803d;
+}
+
+.remark-content {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.ai-panel-empty {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
 }
 </style>

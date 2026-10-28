@@ -160,6 +160,13 @@ html, body {
   overflow-x: hidden;
 }
 
+/* AI 百事通抽屉打开时锁定视口，防止底层背景滚动穿透 (Scroll Chaining) */
+html.ai-drawer-locked,
+body.ai-drawer-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
 body {
   font-family: var(--font-body);
   color: var(--cal-body);

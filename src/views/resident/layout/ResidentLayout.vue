@@ -303,6 +303,9 @@
         </div>
       </div>
     </el-drawer>
+
+    <!-- 全局 AI 社区百事通悬浮助手 -->
+    <AiAssistantDrawer />
   </div>
 </template>
 
@@ -326,6 +329,7 @@ import { useNoticeStore } from '@/stores/notice'
 import { ElMessage } from 'element-plus'
 import NotificationPopover from '@/components/common/NotificationPopover.vue'
 import GlobalOmniSearchModal from '@/components/common/GlobalOmniSearchModal.vue'
+import AiAssistantDrawer from '@/components/common/AiAssistantDrawer.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
