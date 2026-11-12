@@ -68,4 +68,12 @@ watch(
   font-size: 13px;
   color: #9ca3af;
 }
+
+/* 移动端 (<=900px): 回顶钮与 AI 悬浮球同列右对齐, 且抬到 AI 球上方, 避免两者重叠 */
+@media (max-width: 900px) {
+  .cal-backtop {
+    right: 16px !important;
+    bottom: calc(132px + env(safe-area-inset-bottom)) !important;
+  }
+}
 </style>

@@ -563,6 +563,14 @@ function scrollToBottom() {
   transform: translateY(-4px) scale(1.05);
 }
 
+/* 移动端 (<=900px): 悬浮球抬到底部 TabBar 上方, 避免遮挡"我的"等标签 */
+@media (max-width: 900px) {
+  .ai-floating-ball {
+    right: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
 .ball-inner {
   display: flex;
   align-items: center;
@@ -951,7 +959,8 @@ function scrollToBottom() {
   margin-top: 8px;
 }
 
-@media (max-width: 640px) {
+/* 与 ResidentLayout 的移动端断点 (900px) 对齐: 收起桌面文案, 悬浮球在窄屏退化为纯图标 */
+@media (max-width: 900px) {
   .desktop-only {
     display: none !important;
   }

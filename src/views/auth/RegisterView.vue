@@ -62,16 +62,22 @@
           />
         </el-form-item>
 
-        <el-button
-          type="primary"
-          size="large"
-          class="submit-btn"
-          :loading="loading"
-          @click="handleRegister"
-        >
+        <el-button type="primary" size="large" class="submit-btn" @click="handleRegister">
           立即注册并登录
         </el-button>
       </el-form>
+
+      <!-- 滑块人机验证弹窗：滑动成功后自动提交注册 -->
+      <el-dialog
+        v-model="captchaVisible"
+        title="安全验证"
+        width="390"
+        align-center
+        :close-on-click-modal="false"
+        destroy-on-close
+      >
+        <SliderCaptcha ref="captchaRef" @verify="onCaptchaVerify" />
+      </el-dialog>
 
       <div class="card-footer">
         <span>已有社区账号？</span>
@@ -87,6 +93,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { User, Lock, Postcard, Iphone } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import SliderCaptcha from '@/components/common/SliderCaptcha.vue'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
 import type { CommunityOption } from '@/types'
@@ -97,8 +104,9 @@ const userStore = useUserStore()
 const communityStore = useCommunityStore()
 
 const formRef = ref<FormInstance>()
-const loading = ref(false)
 const communities = ref<CommunityOption[]>([])
+const captchaVisible = ref(false)
+const captchaRef = ref<InstanceType<typeof SliderCaptcha>>()
 
 const form = reactive({
   username: '',
@@ -135,18 +143,25 @@ onMounted(async () => {
 
 async function handleRegister() {
   if (!formRef.value) return
-  await formRef.value.validate()
+  const ok = await formRef.value.validate().then(() => true).catch(() => false)
+  if (!ok) return
+  captchaVisible.value = true
+}
 
-  loading.value = true
+/** 滑块验证通过后提交注册 (账号占用或验证未通过时滑块均已消费，自动换新图重滑) */
+async function onCaptchaVerify(payload: { captchaId: string; captchaX: number }) {
   try {
-    const res: any = await request.post('/auth/register', form)
+    const res: any = await request.post('/auth/register', { ...form, ...payload })
+    captchaRef.value?.markSuccess()
     userStore.setAuth(res.token, res)
     ElMessage.success('注册成功，已自动登录！')
     const redirect = (route.query.redirect as string) || ''
-    router.push(redirect || '/')
+    setTimeout(() => {
+      captchaVisible.value = false
+      router.push(redirect || '/')
+    }, 700)
   } catch (err) {
-  } finally {
-    loading.value = false
+    captchaRef.value?.markFail()
   }
 }
 </script>

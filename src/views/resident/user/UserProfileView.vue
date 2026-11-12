@@ -49,16 +49,13 @@
           </div>
         </div>
 
-        <!-- 名片快捷按钮 -->
+        <!-- 名片快捷按钮 (退出登录统一走右上角胶囊, 避免同名片重复入口) -->
         <div class="identity-quick-btns">
           <el-button size="small" class="flex-1" :icon="EditPen" @click="switchTab('overview')">
             编辑资料
           </el-button>
           <el-button size="small" class="flex-1" :icon="Lock" @click="switchTab('security')">
             修改密码
-          </el-button>
-          <el-button size="small" type="danger" plain :icon="SwitchButton" @click="handleLogout">
-            退出
           </el-button>
         </div>
       </div>
@@ -1291,7 +1288,13 @@ function getNoticeActionHint(item: UserNotice) {
 
 .identity-quick-btns {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+/* 抵消 Element Plus 相邻按钮自带的 margin-left, 统一用 flex gap 控制 */
+.identity-quick-btns :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .flex-1 {

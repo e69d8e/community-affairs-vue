@@ -86,16 +86,22 @@
             <router-link :to="route.query.redirect ? { path: '/register', query: { redirect: route.query.redirect } } : '/register'" class="link-register">新居民在线注册 →</router-link>
           </div>
 
-          <el-button
-            type="primary"
-            size="large"
-            class="submit-btn"
-            :loading="loading"
-            @click="handleLogin"
-          >
+          <el-button type="primary" size="large" class="submit-btn" @click="handleLogin">
             登 录
           </el-button>
         </el-form>
+
+        <!-- 滑块人机验证弹窗：滑动成功后自动提交登录 -->
+        <el-dialog
+          v-model="captchaVisible"
+          title="安全验证"
+          width="390"
+          align-center
+          :close-on-click-modal="false"
+          destroy-on-close
+        >
+          <SliderCaptcha ref="captchaRef" @verify="onCaptchaVerify" />
+        </el-dialog>
 
         <div class="card-footer">
           <router-link to="/" class="guest-link">以访客身份浏览居民门户 →</router-link>
@@ -111,6 +117,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import SliderCaptcha from '@/components/common/SliderCaptcha.vue'
 import { isDev as isDevEnv } from '@/utils/env'
 import { useUserStore } from '@/stores/user'
 
@@ -119,8 +126,9 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const formRef = ref<FormInstance>()
-const loading = ref(false)
 const rememberMe = ref(true)
+const captchaVisible = ref(false)
+const captchaRef = ref<InstanceType<typeof SliderCaptcha>>()
 const isDev = isDevEnv
 const instantLogin = ref(isDev)
 
@@ -157,24 +165,30 @@ async function handleLogin() {
   if (!formRef.value) return
   const ok = await formRef.value.validate().then(() => true).catch(() => false)
   if (!ok) return
+  captchaVisible.value = true
+}
 
-  loading.value = true
+/** 滑块验证通过后提交登录 (密码错误或验证未通过时滑块均已消费，自动换新图重滑) */
+async function onCaptchaVerify(payload: { captchaId: string; captchaX: number }) {
   try {
-    const res: any = await request.post('/auth/login', form)
+    const res: any = await request.post('/auth/login', { ...form, ...payload })
+    captchaRef.value?.markSuccess()
     userStore.setAuth(res.token, res)
     ElMessage.success(`欢迎回来，${res.realName || res.username}！`)
 
     const redirect = (route.query.redirect as string) || ''
-    if (redirect) {
-      router.push(redirect)
-    } else if (userStore.canAccessAdmin) {
-      router.push('/admin/dashboard')
-    } else {
-      router.push('/')
-    }
+    setTimeout(() => {
+      captchaVisible.value = false
+      if (redirect) {
+        router.push(redirect)
+      } else if (userStore.canAccessAdmin) {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/')
+      }
+    }, 700)
   } catch (err) {
-  } finally {
-    loading.value = false
+    captchaRef.value?.markFail()
   }
 }
 </script>

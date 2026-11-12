@@ -352,3 +352,9 @@ export interface AiChatMessage {
   loading?: boolean
   createTime?: string
 }
+
+export interface SliderCaptchaData {
+  captchaId: string
+  bgImage: string
+  jigsawImage: string
+}
