@@ -30,29 +30,29 @@
 
     <!-- 双通道快捷发起条 (直观分流：设施报修 vs 投诉建议) -->
     <div class="quick-launch-bar">
-      <div class="launch-card repair-launch" @click="goToSubmit(1)">
-        <div class="launch-icon">🛠️</div>
-        <div class="launch-info">
-          <div class="launch-title-row">
-            <h4>申报房屋与公共设施报修</h4>
+      <button type="button" class="launch-card repair-launch" @click="goToSubmit(1)">
+        <span class="launch-icon" aria-hidden="true">🛠️</span>
+        <span class="launch-info">
+          <span class="launch-title-row">
+            <span class="launch-heading">申报房屋与公共设施报修</span>
             <span class="cal-badge cal-badge-emerald">极速派工</span>
-          </div>
-          <p>水电管网渗漏、电梯异响、门禁失灵、楼道照明损坏等故障一键申报</p>
-        </div>
-        <span class="launch-cta">立即报修 →</span>
-      </div>
+          </span>
+          <span class="launch-desc">水电管网渗漏、电梯异响、门禁失灵、楼道照明损坏等故障一键申报</span>
+        </span>
+        <span class="launch-cta" aria-hidden="true">立即报修 →</span>
+      </button>
 
-      <div class="launch-card complaint-launch" @click="goToSubmit(2)">
-        <div class="launch-icon">📝</div>
-        <div class="launch-info">
-          <div class="launch-title-row">
-            <h4>提报邻里投诉与物业建议</h4>
+      <button type="button" class="launch-card complaint-launch" @click="goToSubmit(2)">
+        <span class="launch-icon" aria-hidden="true">📝</span>
+        <span class="launch-info">
+          <span class="launch-title-row">
+            <span class="launch-heading">提报邻里投诉与物业建议</span>
             <span class="cal-badge cal-badge-orange">直达网格</span>
-          </div>
-          <p>违规停车占道、飞线充电隐患、深夜噪音扰民及物业服务意见反馈</p>
-        </div>
-        <span class="launch-cta">提报诉求 →</span>
-      </div>
+          </span>
+          <span class="launch-desc">违规停车占道、飞线充电隐患、深夜噪音扰民及物业服务意见反馈</span>
+        </span>
+        <span class="launch-cta" aria-hidden="true">提报诉求 →</span>
+      </button>
     </div>
 
     <!-- 状态筛选标签 (Cal Tabs) -->
@@ -79,10 +79,15 @@
       >
         <div class="card-header-line">
           <div class="order-no-tag">
-            <span class="no-text clickable-order-no" title="点击快速复制工单号" @click.stop="copyOrderNo(order.orderNo)">
+            <button
+              type="button"
+              class="no-text clickable-order-no"
+              :aria-label="`复制工单号 ${order.orderNo}`"
+              @click.stop="copyOrderNo(order.orderNo)"
+            >
               #{{ order.orderNo }}
-              <el-icon :size="12" class="copy-icon"><CopyDocument /></el-icon>
-            </span>
+              <el-icon :size="12" class="copy-icon" aria-hidden="true"><CopyDocument /></el-icon>
+            </button>
             <span v-if="order.isUrgent === 1" class="cal-badge cal-badge-pink">加急</span>
             <span class="cal-badge cal-badge-gray">
               {{ order.orderType === 1 ? '设施报修' : '投诉建议' }}
@@ -93,7 +98,11 @@
           </span>
         </div>
 
-        <h3 class="order-card-title">{{ order.title }}</h3>
+        <h2 class="order-card-title">
+          <router-link :to="`/orders/${order.id}`" class="order-title-link" @click.stop>
+            {{ order.title }}
+          </router-link>
+        </h2>
         <p class="order-card-desc">{{ order.content }}</p>
 
         <div class="card-footer-line">
@@ -150,12 +159,12 @@
               {{ getStatusText(drawerOrder.status) }}
             </span>
           </div>
-          <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px">{{ drawerOrder.title }}</h4>
+          <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px">{{ drawerOrder.title }}</h3>
           <p style="font-size: 13px; color: #475569; margin: 0">{{ drawerOrder.content }}</p>
         </div>
 
         <div>
-          <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px">全生命周期流转轨迹</h4>
+          <h3 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px">全生命周期流转轨迹</h3>
           <el-timeline v-if="drawerOrder.logs && drawerOrder.logs.length > 0">
             <el-timeline-item
               v-for="log in drawerOrder.logs"
@@ -455,6 +464,9 @@ function getStatusBadgeClass(status: number) {
   margin-bottom: 24px;
 }
 .launch-card {
+  width: 100%;
+  font: inherit;
+  text-align: left;
   background: var(--cal-canvas);
   border: 1px solid var(--cal-hairline);
   border-radius: 14px;
@@ -463,7 +475,7 @@ function getStatusBadgeClass(status: number) {
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .launch-card:hover {
   border-color: var(--cal-ink);
@@ -485,18 +497,26 @@ function getStatusBadgeClass(status: number) {
   flex: 1;
   min-width: 0;
 }
+.launch-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
 .launch-title-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
 }
-.launch-title-row h4 {
+.launch-title-row h4,
+.launch-heading {
   font-size: 15px;
   font-weight: 700;
   color: var(--cal-ink);
 }
-.launch-info p {
+.launch-info p,
+.launch-desc {
   font-size: 12px;
   color: var(--cal-muted);
   line-height: 1.4;
@@ -544,11 +564,40 @@ function getStatusBadgeClass(status: number) {
   font-size: 13px;
   color: var(--cal-muted);
 }
+.clickable-order-no {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 4px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  min-height: 24px;
+}
+.clickable-order-no:hover,
+.clickable-order-no:focus-visible {
+  color: var(--cal-ink);
+  background: var(--cal-surface-soft);
+}
 .order-card-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--cal-ink);
   margin-bottom: 8px;
+}
+.order-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.order-title-link:hover,
+.order-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .order-card-desc {
   font-size: 14px;

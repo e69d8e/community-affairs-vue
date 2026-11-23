@@ -20,16 +20,24 @@
           <!-- 左侧相册 -->
           <div class="gallery-col">
             <div class="main-preview">
-              <img :src="currentPreviewImage" class="preview-img" />
+              <img :src="currentPreviewImage" :alt="post.title" class="preview-img" />
             </div>
-            <div v-if="imageList.length > 1" class="thumbnail-row">
-              <img
+            <div v-if="imageList.length > 1" class="thumbnail-row" role="group" aria-label="商品图片缩略图">
+              <button
                 v-for="(img, idx) in imageList"
                 :key="idx"
-                :src="img"
-                :class="['thumb-img', { active: currentPreviewImage === img }]"
+                type="button"
+                :class="['thumb-btn', { active: currentPreviewImage === img }]"
+                :aria-label="`查看第 ${idx + 1} 张图片`"
+                :aria-pressed="currentPreviewImage === img"
                 @click="currentPreviewImage = img"
-              />
+              >
+                <img
+                  :src="img"
+                  :alt="`${post.title} 缩略图 ${idx + 1}`"
+                  class="thumb-img"
+                />
+              </button>
             </div>
           </div>
 
@@ -48,7 +56,7 @@
 
             <div class="price-banner">
               <template v-if="post.postType === 1">
-                <span class="price-symbol">¥</span>
+                <span v-if="post.price > 0" class="price-symbol">¥</span>
                 <span class="price-val">{{ post.price > 0 ? post.price : '免费赠送' }}</span>
                 <span class="trade-type-label">({{ getTradeTypeText(post.tradeType) }})</span>
               </template>
@@ -63,7 +71,7 @@
 
             <!-- 发布者卡片 -->
             <div class="author-card">
-              <el-avatar :size="48" :src="post.authorAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
+              <el-avatar :size="48" :src="post.authorAvatar || DEFAULT_AVATAR" />
               <div class="author-details">
                 <div class="author-title-row">
                   <span class="author-name">{{ post.authorName }}</span>
@@ -104,7 +112,7 @@
                 :icon="ChatDotRound"
                 @click="openChatModal"
               >
-                💬 私信沟通
+                私信沟通
               </el-button>
 
               <el-button
@@ -170,7 +178,7 @@
 
         <!-- 详细内容正文 -->
         <div class="description-section">
-          <h3 class="section-title">详细说明</h3>
+          <h2 class="section-title">详细说明</h2>
           <p class="desc-text">{{ post.description }}</p>
         </div>
 
@@ -178,18 +186,18 @@
 
         <!-- 邻里留言与评论互动区 -->
         <div class="comment-section">
-          <h3 class="section-title">邻里留言 ({{ post.comments?.length || 0 }})</h3>
+          <h2 class="section-title">邻里留言 ({{ post.comments?.length || 0 }})</h2>
 
           <div class="comment-input-box">
             <!-- 快捷礼貌问询短语条 -->
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px">
-              <span style="font-size: 12px; color: #64748b">⚡ 快捷问询：</span>
+              <span style="font-size: 12px; color: #475569">⚡ 快捷问询：</span>
               <el-button
                 v-for="phrase in quickCommentPhrases"
                 :key="phrase"
                 size="small"
                 round
-                style="height: 24px; font-size: 12px; padding: 0 10px"
+                style="min-height: 28px; font-size: 12px; padding: 2px 10px"
                 @click="newComment = phrase"
               >
                 {{ phrase }}
@@ -217,7 +225,7 @@
             </div>
 
             <div v-for="c in post.comments" :key="c.id" class="comment-item">
-              <el-avatar :size="36" :src="c.userAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
+              <el-avatar :size="36" :src="c.userAvatar || DEFAULT_AVATAR" />
               <div class="comment-content">
                 <div class="comment-header">
                   <span class="comment-author">{{ c.userName }}</span>
@@ -271,6 +279,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { DEFAULT_AVATAR, DEFAULT_COVER } from '@/constants/defaults'
 import { useUserStore } from '@/stores/user'
 import MarketChatModal from '@/components/market/MarketChatModal.vue'
 import type { MarketPost } from '@/types'
@@ -317,12 +326,12 @@ const submittingReport = ref(false)
 const showChatModal = ref(false)
 
 const imageList = computed(() => {
-  if (!post.value?.images) return ['https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800']
+  if (!post.value?.images) return [DEFAULT_COVER]
   try {
     const arr = JSON.parse(post.value.images)
     if (Array.isArray(arr) && arr.length > 0) return arr
   } catch (e) {}
-  return ['https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800']
+  return [DEFAULT_COVER]
 })
 
 const isAuthor = computed(() => {
@@ -590,18 +599,25 @@ function getStatusTag(status: number) {
   overflow-x: auto;
 }
 
-.thumb-img {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
+.thumb-btn {
+  padding: 0;
+  background: transparent;
   border-radius: 8px;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.2s;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.15s ease;
 }
 
-.thumb-img.active {
-  border-color: #3b82f6;
+.thumb-btn.active {
+  border-color: #2563eb;
+}
+
+.thumb-img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
 }
 
 .info-col {
@@ -711,7 +727,11 @@ function getStatusTag(status: number) {
   margin-top: auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
+}
+
+.action-btn-group :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .description-section {

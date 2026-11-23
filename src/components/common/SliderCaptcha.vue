@@ -6,6 +6,8 @@
         v-if="captcha"
         class="bg-img"
         :src="captcha.bgImage"
+        width="310"
+        height="155"
         alt="滑块验证码背景图"
         draggable="false"
       />
@@ -14,11 +16,13 @@
         class="jigsaw-img"
         :src="captcha.jigsawImage"
         :style="{ left: moveX + 'px' }"
+        width="54"
+        height="155"
         alt=""
         draggable="false"
       />
-      <div v-if="state === 'success'" class="result-mask">
-        <el-icon :size="18"><CircleCheckFilled /></el-icon>
+      <div v-if="state === 'success'" class="result-mask" role="status">
+        <el-icon :size="18" aria-hidden="true"><CircleCheckFilled /></el-icon>
         <span>验证通过</span>
       </div>
       <button
@@ -26,11 +30,12 @@
         class="refresh-btn"
         type="button"
         title="换一张"
+        aria-label="换一张拼图验证码"
         @click="refresh"
       >
-        <el-icon><Refresh /></el-icon>
+        <el-icon aria-hidden="true"><Refresh /></el-icon>
       </button>
-      <div v-if="loading || state === 'verifying'" class="loading-mask">
+      <div v-if="loading || state === 'verifying'" class="loading-mask" role="status" aria-label="加载验证码">
         <el-icon class="is-loading" :size="20"><Loading /></el-icon>
       </div>
     </div>
@@ -38,20 +43,27 @@
     <!-- 滑轨 -->
     <div class="slider-track" :class="{ 'is-success': state === 'success', 'is-fail': state === 'fail' }">
       <div class="track-fill" :style="{ width: fillWidth + 'px' }"></div>
-      <span v-if="state === 'idle' && moveX === 0" class="track-hint">按住滑块，拖动完成拼图验证</span>
-      <span v-else-if="state === 'fail'" class="track-hint hint-fail">验证未通过，正在刷新…</span>
+      <span v-if="state === 'idle' && moveX === 0" class="track-hint">按住滑块，拖动或使用左右键完成拼图验证</span>
+      <span v-else-if="state === 'fail'" class="track-hint hint-fail" role="alert">验证未通过，正在刷新…</span>
       <span v-else-if="state === 'success'" class="track-hint hint-success">验证通过</span>
       <div
         class="slider-handle"
         :class="{ 'is-success': state === 'success', 'is-fail': state === 'fail' }"
         :style="{ left: moveX + 'px' }"
+        role="slider"
+        tabindex="0"
+        aria-label="拖动或使用左右方向键滑至缺口处并按回车提交"
+        aria-valuemin="0"
+        :aria-valuemax="MAX_MOVE"
+        :aria-valuenow="Math.round(moveX)"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
         @pointercancel="onPointerCancel"
+        @keydown="onSliderKeydown"
       >
-        <el-icon v-if="state === 'success'"><CircleCheckFilled /></el-icon>
-        <el-icon v-else><Right /></el-icon>
+        <el-icon v-if="state === 'success'" aria-hidden="true"><CircleCheckFilled /></el-icon>
+        <el-icon v-else aria-hidden="true"><Right /></el-icon>
       </div>
     </div>
   </div>
@@ -129,6 +141,28 @@ function onPointerCancel() {
   if (state.value === 'idle') moveX.value = 0
 }
 
+function onSliderKeydown(e: KeyboardEvent) {
+  if (state.value !== 'idle' || loading.value || !captcha.value) return
+  const step = e.shiftKey ? 16 : 4
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    moveX.value = Math.min(MAX_MOVE, moveX.value + step)
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    moveX.value = Math.max(0, moveX.value - step)
+  } else if (e.key === 'Home') {
+    e.preventDefault()
+    moveX.value = 0
+  } else if (e.key === 'End') {
+    e.preventDefault()
+    moveX.value = MAX_MOVE
+  } else if ((e.key === 'Enter' || e.key === ' ') && moveX.value > DRAG_THRESHOLD) {
+    e.preventDefault()
+    state.value = 'verifying'
+    emit('verify', { captchaId: captcha.value.captchaId, captchaX: moveX.value })
+  }
+}
+
 /** 登录/注册成功反馈：锁定成功态，由父组件随后关闭弹窗 */
 function markSuccess() {
   state.value = 'success'
@@ -146,7 +180,9 @@ defineExpose({ refresh, markSuccess, markFail })
 <style scoped>
 .slider-captcha {
   width: 310px;
+  max-width: 100%;
   margin: 0 auto;
+  overflow-x: auto;
   user-select: none;
 }
 

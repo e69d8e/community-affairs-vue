@@ -8,6 +8,8 @@
         viewBox="0 0 200 48"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        :aria-label="text"
       >
         <g transform="translate(4, 8)">
           <rect width="32" height="32" rx="8" fill="#111111" />
@@ -51,6 +53,9 @@
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        :role="showText ? undefined : 'img'"
+        :aria-label="showText ? undefined : text"
+        :aria-hidden="showText ? 'true' : undefined"
       >
         <rect width="64" height="64" rx="16" fill="#111111" />
         <path
@@ -72,6 +77,9 @@
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        :role="showText ? undefined : 'img'"
+        :aria-label="showText ? undefined : text"
+        :aria-hidden="showText ? 'true' : undefined"
       >
         <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5" />
         <path d="M19 28L32 17L45 28" stroke="#111111" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" />
@@ -93,6 +101,9 @@
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        :role="showText ? undefined : 'img'"
+        :aria-label="showText ? undefined : text"
+        :aria-hidden="showText ? 'true' : undefined"
       >
         <circle cx="32" cy="32" r="32" fill="#111111" />
         <path

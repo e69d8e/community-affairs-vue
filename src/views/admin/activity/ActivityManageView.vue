@@ -2,7 +2,7 @@
   <div class="activity-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">社区文体与公益活动管理</h2>
+        <h1 class="page-title">社区文体与公益活动管理</h1>
         <p class="page-sub">发布全区公益活动、管理报名名额与导出报名名单</p>
       </div>
       <div class="header-actions">
@@ -22,24 +22,30 @@
         <el-radio-button :value="4">🏁 已完结</el-radio-button>
       </el-radio-group>
 
-      <div class="search-box">
+      <search class="search-box" aria-label="活动搜索">
+        <label for="admin-activity-search" class="visually-hidden">搜索活动名称、地点或分类</label>
         <el-input
+          id="admin-activity-search"
           v-model="searchKeyword"
+          type="search"
+          enterkeyhint="search"
           placeholder="搜索活动名称、地点或分类..."
-          :prefix-icon="Search"
+          :prefix-icon="SearchIcon"
           clearable
           style="width: 260px"
         />
-      </div>
+      </search>
     </div>
 
     <!-- 活动列表表格 -->
     <div class="table-card card-hover">
+      <div class="table-scroll-region" tabindex="0" role="region" aria-label="社区活动管理列表">
       <el-table v-loading="loading" :data="filteredActivities" style="width: 100%">
         <el-table-column label="封面" width="100">
           <template #default="{ row }">
             <el-image
-              :src="row.coverImage || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300'"
+              :src="row.coverImage || DEFAULT_COVER"
+              :alt="row.title"
               style="width: 70px; height: 46px; border-radius: 6px"
               fit="cover"
             />
@@ -107,6 +113,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -244,9 +251,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, Search as SearchIcon } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import { DEFAULT_COVER } from '@/constants/defaults'
 import { uploadFile } from '@/utils/upload'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'

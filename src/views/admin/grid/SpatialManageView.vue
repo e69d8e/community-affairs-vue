@@ -2,7 +2,7 @@
   <div class="spatial-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">楼宇空间结构维护</h2>
+        <h1 class="page-title">楼宇空间结构维护</h1>
         <p class="page-sub">
           维护小区「楼栋 → 单元 → 房屋」三级空间台账，新增楼栋可按单元数与楼层数一键生成完整户室
         </p>
@@ -23,21 +23,23 @@
           @row-click="(row: Building) => selectBuilding(row.id)"
           class="cascade-table"
         >
-          <el-table-column label="楼栋">
+          <el-table-column label="楼栋" min-width="142">
             <template #default="{ row }">
               <div class="b-name">{{ row.buildingName }}</div>
               <div class="b-sub">{{ row.buildingNo }} 号楼 · {{ row.totalUnits }}单元 / {{ row.totalFloors }}层</div>
             </template>
           </el-table-column>
-          <el-table-column label="楼栋长" width="92">
+          <el-table-column label="楼栋长" width="88" show-overflow-tooltip>
             <template #default="{ row }">
               <span class="officer-name">{{ officerMap[row.gridOfficerId || ''] || '未分配' }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="104" align="center">
+          <el-table-column label="操作" width="90" align="center">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click.stop="openBuildingEdit(row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click.stop="removeBuilding(row)">删除</el-button>
+              <div class="table-op-row">
+                <el-button link type="primary" size="small" @click.stop="openBuildingEdit(row)">编辑</el-button>
+                <el-button link type="danger" size="small" @click.stop="removeBuilding(row)">删除</el-button>
+              </div>
             </template>
           </el-table-column>
           <template #empty>
@@ -69,16 +71,18 @@
           @row-click="(row: Unit) => selectUnit(row.id)"
           class="cascade-table"
         >
-          <el-table-column label="单元">
+          <el-table-column label="单元" min-width="96">
             <template #default="{ row }">
               <div class="b-name">{{ row.unitName }}</div>
               <div class="b-sub">{{ row.hasElevator === 1 ? '🛗 有电梯' : '🚶 无电梯' }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="104" align="center">
+          <el-table-column label="操作" width="90" align="center">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click.stop="openUnitEdit(row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click.stop="removeUnit(row)">删除</el-button>
+              <div class="table-op-row">
+                <el-button link type="primary" size="small" @click.stop="openUnitEdit(row)">编辑</el-button>
+                <el-button link type="danger" size="small" @click.stop="removeUnit(row)">删除</el-button>
+              </div>
             </template>
           </el-table-column>
           <template #empty>
@@ -100,31 +104,33 @@
           <el-empty description="请先选择楼栋下的单元" :image-size="64" />
         </div>
         <el-table v-else v-loading="loadingHouses" :data="houses" class="cascade-table" max-height="560">
-          <el-table-column prop="houseNo" label="门牌" width="90">
+          <el-table-column prop="houseNo" label="门牌" width="72">
             <template #default="{ row }">
               <span class="h-no">{{ row.houseNo }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="floorNum" label="楼层" width="64" align="center">
+          <el-table-column prop="floorNum" label="楼层" width="52" align="center">
             <template #default="{ row }">{{ row.floorNum }}F</template>
           </el-table-column>
-          <el-table-column prop="area" label="面积(㎡)" width="90" align="right">
+          <el-table-column prop="area" label="面积(㎡)" width="76" align="right">
             <template #default="{ row }">{{ row.area ?? '—' }}</template>
           </el-table-column>
-          <el-table-column prop="houseType" label="户型" min-width="100">
+          <el-table-column prop="houseType" label="户型" min-width="88" show-overflow-tooltip>
             <template #default="{ row }">{{ row.houseType || '—' }}</template>
           </el-table-column>
-          <el-table-column label="居住状态" width="96" align="center">
+          <el-table-column label="居住状态" width="88" align="center">
             <template #default="{ row }">
               <el-tag size="small" :type="LIVE_STATUS[row.liveStatus]?.type || 'info'">
                 {{ LIVE_STATUS[row.liveStatus]?.label || '未知' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="104" align="center">
+          <el-table-column label="操作" width="92" align="center" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openHouseEdit(row)">编辑</el-button>
-              <el-button link type="danger" size="small" @click="removeHouse(row)">删除</el-button>
+              <div class="table-op-row">
+                <el-button link type="primary" size="small" @click="openHouseEdit(row)">编辑</el-button>
+                <el-button link type="danger" size="small" @click="removeHouse(row)">删除</el-button>
+              </div>
             </template>
           </el-table-column>
           <template #empty>
@@ -743,7 +749,7 @@ async function submitBatchGen() {
 
 .cascade-layout {
   display: grid;
-  grid-template-columns: 320px 280px 1fr;
+  grid-template-columns: 356px 220px 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -789,6 +795,10 @@ async function submitBatchGen() {
   cursor: pointer;
 }
 
+:deep(.cascade-table .cell) {
+  padding: 0 6px;
+}
+
 :deep(.cascade-table .active-row) {
   background: #f0fdf4;
 }
@@ -801,12 +811,30 @@ async function submitBatchGen() {
   font-size: 14px;
   font-weight: 700;
   color: #1e293b;
+  white-space: nowrap;
 }
 
 .b-sub {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #94a3b8;
   margin-top: 2px;
+  white-space: nowrap;
+}
+
+.officer-name {
+  white-space: nowrap;
+}
+
+.table-op-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.table-op-row :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .officer-name {

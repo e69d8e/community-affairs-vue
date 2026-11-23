@@ -25,6 +25,7 @@
             {{ getStatusText(order.status) }}
           </span>
         </div>
+        <h1 class="order-detail-title">{{ order.title }}</h1>
 
         <el-steps :active="getStepIndex(order.status)" finish-status="success" align-center class="process-steps">
           <el-step title="居民申报" description="工单已成功提交" />
@@ -39,7 +40,7 @@
       <div class="detail-split-grid">
         <!-- 左侧：工单正文与申报凭证 -->
         <div class="detail-main-card cal-mockup-card">
-          <h3 class="section-title">工单详情内容</h3>
+          <h2 class="section-title">工单详情内容</h2>
           <div class="info-table">
             <div class="info-row">
               <span class="row-label">工单类型：</span>
@@ -73,7 +74,7 @@
 
           <!-- 申报时现场照片 -->
           <div v-if="reportImages.length > 0" class="images-block">
-            <h4 class="block-subtitle">现场申报照片</h4>
+            <h3 class="block-subtitle">现场申报照片</h3>
             <div class="image-gallery">
               <el-image
                 v-for="(img, idx) in reportImages"
@@ -90,7 +91,7 @@
 
           <!-- 完工反馈与凭证 (若已完工) -->
           <div v-if="order.handleResult" class="finish-block">
-            <h4 class="block-subtitle" style="color: #10b981">维修施工完工结果</h4>
+            <h3 class="block-subtitle" style="color: #047857">维修施工完工结果</h3>
             <p class="desc-box" style="background: #ecfdf5; border-color: #a7f3d0">
               {{ order.handleResult }}
             </p>
@@ -110,18 +111,18 @@
 
           <!-- 居民评价交互卡片 (若 status === 5) -->
           <div v-if="order.status === 5" class="evaluation-action-card">
-            <h4>验收与满意度评价</h4>
+            <h3>验收与满意度评价</h3>
             <p class="eval-tip">维修处理已完工，请您对本次物业服务进行星级评价（评价后将获赠 5 点社区信用积分）：</p>
             <div class="eval-form">
               <el-rate v-model="evalStar" size="large" show-text />
-              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px">
-                <span style="font-size: 12px; color: #059669; line-height: 24px">⚡ 快捷评价：</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center">
+                <span style="font-size: 12px; color: #047857">⚡ 快捷评价：</span>
                 <el-button
                   v-for="tag in ['师傅上门很快，维修专业到位！', '设施已恢复正常，非常感谢！', '网格与物业响应迅速，五星好评！']"
                   :key="tag"
                   size="small"
                   round
-                  style="height: 24px; font-size: 12px; padding: 0 10px"
+                  style="min-height: 28px; font-size: 12px; padding: 2px 10px"
                   @click="evalContent = tag"
                 >
                   {{ tag }}
@@ -144,7 +145,7 @@
 
           <!-- 已评价展示 (若 status === 6) -->
           <div v-else-if="order.status === 6 && order.ratingStar" class="evaluated-card">
-            <h4>居民评价反馈</h4>
+            <h3>居民评价反馈</h3>
             <el-rate :model-value="order.ratingStar" disabled size="small" />
             <p class="eval-text">{{ order.ratingContent || '默认好评' }}</p>
           </div>
@@ -152,7 +153,7 @@
 
         <!-- 右侧：流转日志时间轴 -->
         <div class="detail-timeline-card cal-mockup-card">
-          <h3 class="section-title">工单流转完整追溯轨迹</h3>
+          <h2 class="section-title">工单流转完整追溯轨迹</h2>
           <el-timeline class="order-timeline">
             <el-timeline-item
               v-for="log in order.logs || []"
@@ -392,6 +393,14 @@ async function handleEvaluate() {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   padding: 24px 32px;
+}
+.order-detail-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cal-ink, #0f172a);
+  margin: 10px 0 18px;
+  line-height: 1.4;
+  overflow-wrap: break-word;
 }
 .status-header {
   display: flex;

@@ -42,6 +42,18 @@ function showServiceUnreachable() {
 // 401 并发去重：多个请求同时过期时只清理一次、跳转一次
 let redirectingToLogin = false
 
+let lastErrorKey = ''
+let lastErrorAt = 0
+const ERROR_THROTTLE_MS = 2000
+
+function showThrottledError(msg: string) {
+  const now = Date.now()
+  if (msg === lastErrorKey && now - lastErrorAt < ERROR_THROTTLE_MS) return
+  lastErrorKey = msg
+  lastErrorAt = now
+  ElMessage.error(msg)
+}
+
 function handleUnauthorized() {
   if (redirectingToLogin) return
   redirectingToLogin = true
@@ -64,10 +76,10 @@ service.interceptors.response.use(
       return res.data
     } else {
       if (res.code === 401) {
-        ElMessage.error('登录已失效，请重新登录')
+        showThrottledError('登录已失效，请重新登录')
         handleUnauthorized()
       } else {
-        ElMessage.error(res.message || '请求处理异常')
+        showThrottledError(res.message || '请求处理异常')
       }
       return Promise.reject(new Error(res.message || 'Error'))
     }
@@ -77,13 +89,13 @@ service.interceptors.response.use(
       showServiceUnreachable()
       return Promise.reject(error)
     }
-    if (error.response.status === 401) {
-      ElMessage.error('登录已失效，请重新登录')
+    if (error.response?.status === 401) {
+      showThrottledError('登录已失效，请重新登录')
       handleUnauthorized()
       return Promise.reject(error)
     }
-    const msg = error.response.data?.message || `请求失败（HTTP ${error.response.status}）`
-    ElMessage.error(msg)
+    const msg = error.response?.data?.message || `请求失败（HTTP ${error.response?.status || '网络错误'}）`
+    showThrottledError(msg)
     return Promise.reject(error)
   }
 )

@@ -1,11 +1,11 @@
 <template>
-  <div class="login-page">
+  <main class="login-page">
     <div class="login-container">
       <!-- 左侧品牌展示区 (Cal surface-dark: #101010) -->
       <div class="login-brand">
         <div class="brand-top">
           <div class="brand-badge">智慧治理示范平台</div>
-          <div class="brand-logo">🏡</div>
+          <div class="brand-logo" aria-hidden="true">🏡</div>
           <h1 class="brand-title">智慧社区综合治理平台</h1>
           <p class="brand-subtitle">
             一套系统服务多个社区：网格治理、敏捷报修、邻里互助与应急通告，多社区数据安全隔离。
@@ -35,7 +35,7 @@
 
         <!-- 答辩与测试快捷切换器 (Cal Pill 风格): 仅演示环境(开发模式/本机访问)整块显示 -->
         <div v-if="isDev && presetAccounts.length" class="quick-roles-section">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px">
+          <div class="quick-roles-head">
             <div class="quick-title" style="margin-bottom: 0">⚡ 快速身份体验通道：</div>
             <el-switch
               v-model="instantLogin"
@@ -50,34 +50,51 @@
               :key="r.username"
               type="button"
               class="role-pill-btn"
+              :aria-pressed="form.username === r.username"
               :style="form.username === r.username ? 'border-color: #111827; background: #f1f5f9; font-weight: 700' : ''"
               @click="applyPreset(r)"
             >
-              <span class="role-icon">{{ r.icon }}</span>
+              <span class="role-icon" aria-hidden="true">{{ r.icon }}</span>
               <span class="role-name">{{ r.label }}</span>
             </button>
           </div>
         </div>
 
-        <el-form ref="formRef" :model="form" :rules="rules" class="login-form">
-          <el-form-item prop="username">
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-position="top"
+          scroll-to-error
+          class="login-form"
+          @submit.prevent="handleLogin"
+        >
+          <el-form-item label="登录账号" prop="username">
             <el-input
               v-model="form.username"
+              name="username"
+              autocomplete="username"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="next"
               placeholder="请输入登录用户名"
               :prefix-icon="User"
               size="large"
             />
           </el-form-item>
 
-          <el-form-item prop="password">
+          <el-form-item label="登录密码" prop="password">
             <el-input
               v-model="form.password"
+              name="password"
               type="password"
+              autocomplete="current-password"
+              enterkeyhint="done"
               placeholder="请输入密码"
               :prefix-icon="Lock"
               show-password
               size="large"
-              @keyup.enter="handleLogin"
             />
           </el-form-item>
 
@@ -86,7 +103,7 @@
             <router-link :to="route.query.redirect ? { path: '/register', query: { redirect: route.query.redirect } } : '/register'" class="link-register">新居民在线注册 →</router-link>
           </div>
 
-          <el-button type="primary" size="large" class="submit-btn" @click="handleLogin">
+          <el-button type="primary" native-type="submit" size="large" class="submit-btn">
             登 录
           </el-button>
         </el-form>
@@ -108,7 +125,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -132,8 +149,17 @@ const captchaRef = ref<InstanceType<typeof SliderCaptcha>>()
 const isDev = isDevEnv
 const instantLogin = ref(isDev)
 
+const SAVED_USERNAME_KEY = 'saved_login_username'
+const savedUsername = (() => {
+  try {
+    return localStorage.getItem(SAVED_USERNAME_KEY) || ''
+  } catch {
+    return ''
+  }
+})()
+
 const form = reactive({
-  username: isDev ? 'admin' : '',
+  username: savedUsername || (isDev ? 'admin' : ''),
   password: isDev ? '123456' : ''
 })
 
@@ -173,6 +199,13 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
   try {
     const res: any = await request.post('/auth/login', { ...form, ...payload })
     captchaRef.value?.markSuccess()
+    try {
+      if (rememberMe.value && form.username.trim()) {
+        localStorage.setItem(SAVED_USERNAME_KEY, form.username.trim())
+      } else {
+        localStorage.removeItem(SAVED_USERNAME_KEY)
+      }
+    } catch {}
     userStore.setAuth(res.token, res)
     ElMessage.success(`欢迎回来，${res.realName || res.username}！`)
 
@@ -196,6 +229,7 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
 <style scoped>
 .login-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,6 +349,15 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
   margin-bottom: 24px;
 }
 
+.quick-roles-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
 .quick-title {
   font-size: 11px;
   font-weight: 600;
@@ -323,21 +366,23 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
 }
 
 .roles-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
 .role-pill-btn {
-  display: flex;
+  flex: 1 1 auto;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  white-space: nowrap;
   background: var(--cal-canvas);
   border: 1px solid var(--cal-hairline);
   border-radius: var(--radius-md);
-  padding: 7px 4px;
-  font-size: 11px;
+  padding: 7px 10px;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--cal-ink);
   cursor: pointer;
@@ -407,22 +452,37 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
 
 @media (max-width: 600px) {
   .login-page {
-    padding: 12px;
+    padding: 10px;
+    align-items: flex-start;
   }
   .login-brand {
-    padding: 24px 16px;
+    padding: 16px;
   }
   .brand-title {
-    font-size: 20px;
+    font-size: 18px;
   }
   .brand-subtitle {
-    font-size: 13px;
+    font-size: 12.5px;
+  }
+  .brand-bottom {
+    display: none;
   }
   .login-card {
-    padding: 24px 16px;
+    padding: 18px 16px;
   }
-  .roles-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .card-header p {
+    margin-bottom: 14px;
+  }
+  .quick-roles-section {
+    padding: 10px;
+    margin-bottom: 14px;
+  }
+  .form-extra {
+    margin-bottom: 14px;
+  }
+  .role-pill-btn {
+    padding: 6px 8px;
+    font-size: 11px;
   }
 }
 </style>

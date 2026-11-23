@@ -166,13 +166,20 @@ async function fetchDetailById(id: string) {
   if (!id) return
   loading.value = true
   try {
-    const listRes: any = await request.get('/notice/list', { params: { size: 50 } })
-    allNotices.value = listRes.records || []
+    const listPromise = request
+      .get('/notice/list', { params: { size: 50 } })
+      .then((listRes: any) => {
+        allNotices.value = listRes?.records || []
+        return allNotices.value
+      })
+      .catch(() => allNotices.value)
+
     try {
       const res: any = await request.get(`/notice/detail/${id}`)
       notice.value = res
     } catch (e) {
-      const matched = allNotices.value.find((n: any) => String(n.id) === id || String(n.title).includes(id))
+      const records = await listPromise
+      const matched = records.find((n: any) => String(n.id) === id || String(n.title).includes(id))
       if (matched) {
         const res2: any = await request.get(`/notice/detail/${matched.id}`)
         notice.value = res2

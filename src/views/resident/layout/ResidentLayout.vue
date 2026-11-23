@@ -1,10 +1,12 @@
 <template>
   <div class="resident-layout">
+    <a href="#main-content" class="skip-link visually-hidden">跳转到主要内容</a>
+
     <!-- 顶部统一导航栏 (Cal.com 64px 纯白细边框风格) -->
     <header class="navbar">
       <div class="nav-container">
         <router-link to="/" class="brand">
-          <span class="brand-icon">🏡</span>
+          <span class="brand-icon" aria-hidden="true">🏡</span>
           <div class="brand-text">
             <span class="brand-title">{{ communityName }}</span>
             <span class="brand-sub">智慧治理服务平台</span>
@@ -12,12 +14,12 @@
         </router-link>
 
         <!-- Cal 标志性 nav-pill-group 胶囊导航群 -->
-        <nav class="nav-links cal-pill-group">
-          <router-link to="/" class="nav-item cal-pill-item" exact-active-class="active">首页</router-link>
-          <router-link to="/notices" class="nav-item cal-pill-item" active-class="active">社区公告</router-link>
-          <router-link to="/orders" class="nav-item cal-pill-item" active-class="active">在线报修/投诉</router-link>
-          <router-link to="/activities" class="nav-item cal-pill-item" active-class="active">文体活动</router-link>
-          <router-link to="/market" class="nav-item cal-pill-item" active-class="active">闲置与互助</router-link>
+        <nav class="nav-links cal-pill-group" aria-label="主导航">
+          <router-link to="/" class="nav-item cal-pill-item" exact-active-class="active" :aria-current="route.path === '/' ? 'page' : undefined">首页</router-link>
+          <router-link to="/notices" class="nav-item cal-pill-item" active-class="active" :aria-current="route.path.startsWith('/notices') ? 'page' : undefined">社区公告</router-link>
+          <router-link to="/orders" class="nav-item cal-pill-item" active-class="active" :aria-current="route.path.startsWith('/orders') ? 'page' : undefined">在线报修/投诉</router-link>
+          <router-link to="/activities" class="nav-item cal-pill-item" active-class="active" :aria-current="route.path.startsWith('/activities') ? 'page' : undefined">文体活动</router-link>
+          <router-link to="/market" class="nav-item cal-pill-item" active-class="active" :aria-current="route.path.startsWith('/market') ? 'page' : undefined">闲置与互助</router-link>
         </nav>
 
         <div class="nav-actions">
@@ -26,11 +28,12 @@
             type="button"
             class="cal-search-trigger-btn desktop-only"
             title="全站聚合搜索 (快捷键 ⌘K)"
+            aria-label="打开全站聚合搜索 (快捷键 Command+K)"
             @click="openOmniSearch()"
           >
-            <el-icon :size="15"><Search /></el-icon>
+            <el-icon :size="15" aria-hidden="true"><Search /></el-icon>
             <span class="trigger-label">搜索...</span>
-            <span class="trigger-kbd">⌘K</span>
+            <span class="trigger-kbd" aria-hidden="true">⌘K</span>
           </button>
 
           <!-- 站内信未读提醒卡片 (NotificationPopover) -->
@@ -46,14 +49,14 @@
           <!-- 登录状态判断 (桌面端) -->
           <div class="desktop-auth-actions desktop-only">
             <template v-if="userStore.isLoggedIn">
-              <el-dropdown trigger="hover">
-                <div class="user-avatar-wrap" title="点击直接进入个人中心" @click="$router.push('/user/profile')">
-                  <el-avatar :size="34" :src="userStore.user?.avatar" class="cal-avatar" />
+              <el-dropdown trigger="click">
+                <button type="button" class="user-avatar-wrap" aria-label="打开个人中心与账号菜单">
+                  <el-avatar :size="34" :src="userStore.user?.avatar || DEFAULT_AVATAR" class="cal-avatar" />
                   <span class="user-name">{{ userStore.user?.realName || userStore.user?.username }}</span>
                   <span class="cal-role-badge">
                     {{ formatRole(userStore.user?.role) }}
                   </span>
-                </div>
+                </button>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item v-if="userStore.canAccessAdmin" @click="$router.push('/admin/dashboard')">
@@ -94,7 +97,7 @@
     </header>
 
     <!-- 主视图容器 (平滑页面切换) -->
-    <main class="main-content">
+    <main id="main-content" tabindex="-1" class="main-content">
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
           <component :is="Component" />
@@ -112,7 +115,7 @@
           <div class="footer-col brand-col">
             <div class="footer-brand">
               <span class="footer-logo">🏡</span>
-              <h3 class="footer-title">{{ communityName }} · 智慧社区</h3>
+              <h3 class="footer-title">{{ userStore.user?.communityName ? `${userStore.user.communityName} · 智慧社区` : '智慧社区治理平台' }}</h3>
             </div>
             <p class="footer-desc">
               高效、温情、自主协同的现代化社区综合事务治理服务平台。
@@ -143,39 +146,39 @@
         </div>
 
         <div class="footer-bottom">
-          <p>© 2026 {{ communityName }}智慧社区治理平台 · 多社区共用 · 遵循 Cal.com 现代 SaaS 设计规范</p>
+          <p>© 2026 {{ userStore.user?.communityName ? `${userStore.user.communityName}` : '' }}智慧社区治理平台 · 多社区共用 · 遵循 Cal.com 现代 SaaS 设计规范</p>
         </div>
       </div>
     </footer>
 
     <!-- 移动端常驻底部导航 TabBar (<= 900px) -->
-    <nav class="mobile-bottom-bar mobile-only">
-      <router-link to="/" class="tab-item" exact-active-class="active">
-        <span class="tab-icon">🏡</span>
+    <nav class="mobile-bottom-bar mobile-only" aria-label="底部快捷导航">
+      <router-link to="/" class="tab-item" exact-active-class="active" :aria-current="route.path === '/' ? 'page' : undefined">
+        <span class="tab-icon" aria-hidden="true">🏡</span>
         <span class="tab-label">首页</span>
-        <span class="active-indicator"></span>
+        <span class="active-indicator" aria-hidden="true"></span>
       </router-link>
-      <router-link to="/orders" class="tab-item" active-class="active">
-        <span class="tab-icon">🛠️</span>
+      <router-link to="/orders" class="tab-item" active-class="active" :aria-current="route.path.startsWith('/orders') ? 'page' : undefined">
+        <span class="tab-icon" aria-hidden="true">🛠️</span>
         <span class="tab-label">报修</span>
-        <span class="active-indicator"></span>
+        <span class="active-indicator" aria-hidden="true"></span>
       </router-link>
-      <router-link to="/activities" class="tab-item" active-class="active">
-        <span class="tab-icon">🎫</span>
+      <router-link to="/activities" class="tab-item" active-class="active" :aria-current="route.path.startsWith('/activities') ? 'page' : undefined">
+        <span class="tab-icon" aria-hidden="true">🎫</span>
         <span class="tab-label">活动</span>
-        <span class="active-indicator"></span>
+        <span class="active-indicator" aria-hidden="true"></span>
       </router-link>
-      <router-link to="/market" class="tab-item" active-class="active">
-        <span class="tab-icon">🛍️</span>
+      <router-link to="/market" class="tab-item" active-class="active" :aria-current="route.path.startsWith('/market') ? 'page' : undefined">
+        <span class="tab-icon" aria-hidden="true">🛍️</span>
         <span class="tab-label">集市</span>
-        <span class="active-indicator"></span>
+        <span class="active-indicator" aria-hidden="true"></span>
       </router-link>
-      <router-link to="/user/profile" class="tab-item" active-class="active">
+      <router-link to="/user/profile" class="tab-item" active-class="active" :aria-current="route.path.startsWith('/user') ? 'page' : undefined">
         <el-badge :value="noticeStore.unreadCount" :hidden="noticeStore.unreadCount === 0" :max="99" class="tab-badge">
-          <span class="tab-icon">👤</span>
+          <span class="tab-icon" aria-hidden="true">👤</span>
         </el-badge>
         <span class="tab-label">我的</span>
-        <span class="active-indicator"></span>
+        <span class="active-indicator" aria-hidden="true"></span>
       </router-link>
     </nav>
 
@@ -190,34 +193,36 @@
       <div class="mobile-drawer-content">
         <div class="drawer-header">
           <div class="drawer-brand">
-            <span class="brand-icon">🏡</span>
+            <span class="brand-icon" aria-hidden="true">🏡</span>
             <div>
               <div class="brand-title">{{ communityName }}</div>
               <div class="brand-sub">智慧治理服务平台</div>
             </div>
           </div>
-          <button type="button" class="drawer-close-btn" @click="showMobileDrawer = false">
-            <el-icon :size="18"><Close /></el-icon>
+          <button type="button" class="drawer-close-btn" aria-label="关闭菜单" @click="showMobileDrawer = false">
+            <el-icon :size="18" aria-hidden="true"><Close /></el-icon>
           </button>
         </div>
 
         <!-- 用户身份卡片 -->
-        <div v-if="userStore.isLoggedIn" class="drawer-user-card" @click="navTo('/user/profile')">
-          <el-avatar :size="44" :src="userStore.user?.avatar" class="cal-avatar" />
-          <div class="drawer-user-info">
-            <div class="drawer-user-name">{{ userStore.user?.realName || userStore.user?.username }}</div>
-            <div class="drawer-user-meta">
-              <span class="cal-role-badge">{{ formatRole(userStore.user?.role) }}</span>
-              <span class="drawer-credit">信用分 <strong>{{ userStore.user?.creditScore || 100 }}</strong></span>
-            </div>
-          </div>
+        <div v-if="userStore.isLoggedIn" class="drawer-user-card">
+          <button type="button" class="drawer-user-trigger" @click="navTo('/user/profile')">
+            <el-avatar :size="44" :src="userStore.user?.avatar || DEFAULT_AVATAR" class="cal-avatar" />
+            <span class="drawer-user-info">
+              <span class="drawer-user-name">{{ userStore.user?.realName || userStore.user?.username }}</span>
+              <span class="drawer-user-meta">
+                <span class="cal-role-badge">{{ formatRole(userStore.user?.role) }}</span>
+                <span class="drawer-credit">信用分 <strong>{{ userStore.user?.creditScore || 100 }}</strong></span>
+              </span>
+            </span>
+          </button>
           <button
             type="button"
             class="drawer-quick-logout-btn"
-            title="安全退出登录"
-            @click.stop="handleLogout"
+            aria-label="安全退出登录"
+            @click="handleLogout"
           >
-            <el-icon><SwitchButton /></el-icon>
+            <el-icon aria-hidden="true"><SwitchButton /></el-icon>
             <span>退出</span>
           </button>
         </div>
@@ -229,35 +234,35 @@
           </div>
         </div>
 
-        <div class="drawer-scroll-body">
+        <nav class="drawer-scroll-body" aria-label="移动端抽屉菜单">
           <!-- 快捷功能直通菜单 -->
           <div class="drawer-section">
             <div class="drawer-section-title">便民服务直达</div>
             <div class="drawer-nav-list">
-              <div class="drawer-nav-item" @click="navTo('/')">
-                <span class="item-icon">🏡</span>
+              <button type="button" class="drawer-nav-item" @click="navTo('/')">
+                <span class="item-icon" aria-hidden="true">🏡</span>
                 <span class="item-name">社区门户首页</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/notices')">
-                <span class="item-icon">📢</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/notices')">
+                <span class="item-icon" aria-hidden="true">📢</span>
                 <span class="item-name">重要公告与应急通报</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/orders/submit?type=1')">
-                <span class="item-icon">🛠️</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/orders/submit?type=1')">
+                <span class="item-icon" aria-hidden="true">🛠️</span>
                 <span class="item-name">提报设施故障报修</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/orders/submit?type=2')">
-                <span class="item-icon">📝</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/orders/submit?type=2')">
+                <span class="item-icon" aria-hidden="true">📝</span>
                 <span class="item-name">邻里诉求与物业建议</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/activities')">
-                <span class="item-icon">🎫</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/activities')">
+                <span class="item-icon" aria-hidden="true">🎫</span>
                 <span class="item-name">社区文体与公益报名</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/market')">
-                <span class="item-icon">🛍️</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/market')">
+                <span class="item-icon" aria-hidden="true">🛍️</span>
                 <span class="item-name">邻里闲置互助集市</span>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -265,29 +270,29 @@
           <div v-if="userStore.isLoggedIn" class="drawer-section">
             <div class="drawer-section-title">居民中心与管理后台</div>
             <div class="drawer-nav-list">
-              <div v-if="userStore.canViewScreen" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
-                <span class="item-icon">🖥️</span>
+              <button v-if="userStore.canViewScreen" type="button" class="drawer-nav-item highlight-item" @click="navTo('/screen')">
+                <span class="item-icon" aria-hidden="true">🖥️</span>
                 <span class="item-name">智慧治理综合指挥大屏</span>
-              </div>
-              <div v-if="userStore.canAccessAdmin" class="drawer-nav-item highlight-item" @click="navTo('/admin/dashboard')">
-                <span class="item-icon">📊</span>
+              </button>
+              <button v-if="userStore.canAccessAdmin" type="button" class="drawer-nav-item highlight-item" @click="navTo('/admin/dashboard')">
+                <span class="item-icon" aria-hidden="true">📊</span>
                 <span class="item-name">管理工作台控制台</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/user/profile')">
-                <span class="item-icon">👤</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/user/profile')">
+                <span class="item-icon" aria-hidden="true">👤</span>
                 <span class="item-name">个人概览与资料</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/user/profile?tab=tickets')">
-                <span class="item-icon">🎟️</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/user/profile?tab=tickets')">
+                <span class="item-icon" aria-hidden="true">🎟️</span>
                 <span class="item-name">我的入场凭证与闲置</span>
-              </div>
-              <div class="drawer-nav-item" @click="navTo('/user/profile?tab=orders')">
-                <span class="item-icon">📋</span>
+              </button>
+              <button type="button" class="drawer-nav-item" @click="navTo('/user/profile?tab=orders')">
+                <span class="item-icon" aria-hidden="true">📋</span>
                 <span class="item-name">我的工单办理历史</span>
-              </div>
+              </button>
             </div>
           </div>
-        </div>
+        </nav>
 
         <!-- 便民服务热线 & 退出 -->
         <div class="drawer-footer-info">
@@ -311,7 +316,7 @@
 
 <script setup lang="ts">
 import { computed, ref, provide, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import {
   Bell,
   Search,
@@ -326,12 +331,14 @@ import {
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useNoticeStore } from '@/stores/notice'
+import { DEFAULT_AVATAR } from '@/constants/defaults'
 import { ElMessage } from 'element-plus'
 import NotificationPopover from '@/components/common/NotificationPopover.vue'
 import GlobalOmniSearchModal from '@/components/common/GlobalOmniSearchModal.vue'
 import AiAssistantDrawer from '@/components/common/AiAssistantDrawer.vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const communityName = computed(() => userStore.user?.communityName || '智慧社区')
 const noticeStore = useNoticeStore()
@@ -377,6 +384,7 @@ async function handleLogout() {
 <style scoped>
 .resident-layout {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--cal-canvas);
@@ -892,14 +900,51 @@ async function handleLogout() {
 .drawer-user-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 11px 12px;
   background: var(--cal-surface-soft);
   border-radius: var(--radius-md);
   border: 1px solid var(--cal-hairline);
-  cursor: pointer;
   margin-bottom: 14px;
   flex-shrink: 0;
+}
+
+.drawer-user-trigger {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.drawer-user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-user-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cal-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .drawer-quick-logout-btn {
@@ -1003,6 +1048,11 @@ async function handleLogout() {
 }
 
 .drawer-nav-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1012,7 +1062,7 @@ async function handleLogout() {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .drawer-nav-item:hover {

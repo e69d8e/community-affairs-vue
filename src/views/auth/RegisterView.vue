@@ -1,13 +1,21 @@
 <template>
-  <div class="register-page">
+  <main class="register-page">
     <div class="register-card">
       <div class="card-header">
-        <div class="brand-logo">🏡</div>
-        <h2 class="register-title">新居民实名注册</h2>
+        <div class="brand-logo" aria-hidden="true">🏡</div>
+        <h1 class="register-title">新居民实名注册</h1>
         <p class="register-sub">选择您所在的社区，体验一站式高效治理服务</p>
       </div>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-position="top"
+        scroll-to-error
+        class="register-form"
+        @submit.prevent="handleRegister"
+      >
         <el-form-item label="所属社区" prop="communityId">
           <el-select
             v-model="form.communityId"
@@ -27,6 +35,12 @@
         <el-form-item label="登录账号" prop="username">
           <el-input
             v-model="form.username"
+            name="username"
+            autocomplete="username"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="next"
             placeholder="3~20位字母、数字或下划线"
             :prefix-icon="User"
             size="large"
@@ -36,7 +50,10 @@
         <el-form-item label="登录密码" prop="password">
           <el-input
             v-model="form.password"
+            name="new-password"
             type="password"
+            autocomplete="new-password"
+            enterkeyhint="next"
             placeholder="请输入至少6位密码"
             :prefix-icon="Lock"
             show-password
@@ -47,6 +64,9 @@
         <el-form-item label="真实姓名" prop="realName">
           <el-input
             v-model="form.realName"
+            name="name"
+            autocomplete="name"
+            enterkeyhint="next"
             placeholder="真实姓名（用于物业核对与房产认证）"
             :prefix-icon="Postcard"
             size="large"
@@ -56,13 +76,18 @@
         <el-form-item label="手机号码" prop="phone">
           <el-input
             v-model="form.phone"
+            name="tel"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            enterkeyhint="done"
             placeholder="11位手机号码（接收重要工单及活动提醒）"
             :prefix-icon="Iphone"
             size="large"
           />
         </el-form-item>
 
-        <el-button type="primary" size="large" class="submit-btn" @click="handleRegister">
+        <el-button type="primary" native-type="submit" size="large" class="submit-btn">
           立即注册并登录
         </el-button>
       </el-form>
@@ -84,7 +109,7 @@
         <router-link :to="route.query.redirect ? { path: '/login', query: { redirect: route.query.redirect } } : '/login'" class="link-login">返回登录 →</router-link>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -169,6 +194,7 @@ async function onCaptchaVerify(payload: { captchaId: string; captchaX: number })
 <style scoped>
 .register-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;

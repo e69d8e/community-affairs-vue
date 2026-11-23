@@ -10,29 +10,36 @@
   >
     <div class="omni-search-wrapper">
       <!-- 顶部搜索输入条 -->
-      <div class="omni-input-header">
-        <el-icon class="search-lead-icon"><Search /></el-icon>
+      <search class="omni-input-header">
+        <el-icon class="search-lead-icon" aria-hidden="true"><SearchIcon /></el-icon>
+        <label for="omni-search-input" class="visually-hidden">搜索社区公告、文体活动、邻里闲置与办事服务</label>
         <input
+          id="omni-search-input"
           ref="searchInputRef"
           v-model="query"
-          type="text"
+          type="search"
           class="omni-native-input"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+          enterkeyhint="search"
           placeholder="搜索社区公告、文体活动、邻里闲置、办事服务... (支持 ↑↓ 切换)"
           @input="handleInput"
           @keydown.down.prevent="navigateResults(1)"
           @keydown.up.prevent="navigateResults(-1)"
-          @keydown.enter.prevent="selectActiveItem"
+          @keydown.enter="handleEnterKey"
           @keydown.esc="close"
         />
         <div class="search-right-actions">
-          <span v-if="loading" class="searching-spinner"><el-icon class="is-loading"><Loading /></el-icon></span>
-          <span v-else-if="query" class="clear-btn" @click="query = ''; searchImmediate()">清空</span>
-          <button type="button" class="esc-badge" title="关闭搜索面板 (ESC)" @click="close">
+          <span v-if="loading" class="searching-spinner" role="status" aria-label="正在搜索"><el-icon class="is-loading"><Loading /></el-icon></span>
+          <button v-else-if="query" type="button" class="clear-btn" @click="query = ''; searchImmediate()">清空</button>
+          <button type="button" class="esc-badge" aria-label="关闭搜索面板" @click="close">
             <span class="esc-text-desktop">ESC</span>
             <span class="esc-text-mobile">关闭</span>
           </button>
         </div>
-      </div>
+      </search>
 
       <!-- 分类筛选胶囊 Tab (Cal-pill-group) -->
       <div class="omni-tabs-bar">
@@ -59,14 +66,15 @@
               <button type="button" class="clear-history-btn" @click="clearHistory">清除历史</button>
             </div>
             <div class="tags-cluster">
-              <span
+              <button
                 v-for="item in searchHistory"
                 :key="item"
+                type="button"
                 class="meta-tag history-tag"
                 @click="applyQuery(item)"
               >
                 {{ item }}
-              </span>
+              </button>
             </div>
           </div>
 
@@ -76,14 +84,15 @@
               <span class="meta-title">🔥 社区热搜与常办事务</span>
             </div>
             <div class="tags-cluster">
-              <span
+              <button
                 v-for="tag in hotPresets"
                 :key="tag"
+                type="button"
                 class="meta-tag hot-tag"
                 @click="applyQuery(tag)"
               >
                 {{ tag }}
-              </span>
+              </button>
             </div>
           </div>
 
@@ -93,48 +102,48 @@
               <span class="meta-title">⚡ 常用便民通道</span>
             </div>
             <div class="quick-links-grid">
-              <div class="quick-link-item" @click="jumpRoute('/orders/submit?type=1')">
-                <span class="ql-icon">🛠️</span>
-                <div class="ql-text">
+              <button type="button" class="quick-link-item" @click="jumpRoute('/orders/submit?type=1')">
+                <span class="ql-icon" aria-hidden="true">🛠️</span>
+                <span class="ql-text">
                   <span class="ql-title">在线报修申报</span>
                   <span class="ql-sub">水电管网/照明/客梯保修</span>
-                </div>
-              </div>
-              <div class="quick-link-item" @click="jumpRoute('/orders/submit?type=2')">
-                <span class="ql-icon">📝</span>
-                <div class="ql-text">
+                </span>
+              </button>
+              <button type="button" class="quick-link-item" @click="jumpRoute('/orders/submit?type=2')">
+                <span class="ql-icon" aria-hidden="true">📝</span>
+                <span class="ql-text">
                   <span class="ql-title">物业投诉建议</span>
                   <span class="ql-sub">环境卫生/噪音违停督办</span>
-                </div>
-              </div>
-              <div class="quick-link-item" @click="jumpRoute('/market')">
-                <span class="ql-icon">🤝</span>
-                <div class="ql-text">
+                </span>
+              </button>
+              <button type="button" class="quick-link-item" @click="jumpRoute('/market')">
+                <span class="ql-icon" aria-hidden="true">🤝</span>
+                <span class="ql-text">
                   <span class="ql-title">闲置流转与求助</span>
                   <span class="ql-sub">邻里借用/二手好物互通</span>
-                </div>
-              </div>
-              <div class="quick-link-item" @click="jumpRoute('/user/records?tab=tickets')">
-                <span class="ql-icon">🎫</span>
-                <div class="ql-text">
+                </span>
+              </button>
+              <button type="button" class="quick-link-item" @click="jumpRoute('/user/records?tab=tickets')">
+                <span class="ql-icon" aria-hidden="true">🎫</span>
+                <span class="ql-text">
                   <span class="ql-title">我的活动核销码</span>
                   <span class="ql-sub">文体入场电子凭证包</span>
-                </div>
-              </div>
+                </span>
+              </button>
             </div>
           </div>
         </template>
 
         <!-- 状态 2: 正在搜索中 -->
-        <div v-else-if="loading && totalResultsCount === 0" class="searching-state">
+        <div v-else-if="loading && totalResultsCount === 0" class="searching-state" role="status">
           <el-icon class="is-loading" :size="24"><Loading /></el-icon>
           <span>正在聚合全站数据...</span>
         </div>
 
         <!-- 状态 3: 搜索无结果 -->
-        <div v-else-if="totalResultsCount === 0" class="empty-results-state">
-          <span class="empty-emoji">🔍</span>
-          <h4>未找到与 "{{ query }}" 相关的内容</h4>
+        <div v-else-if="totalResultsCount === 0" class="empty-results-state" role="status">
+          <span class="empty-emoji" aria-hidden="true">🔍</span>
+          <h3>未找到与 "{{ query }}" 相关的内容</h3>
           <p>尝试更换关键词，或从上方热门分类中快速筛选</p>
         </div>
 
@@ -143,82 +152,90 @@
           <!-- 1. 社区通知与公告 -->
           <div v-if="filteredNotices.length > 0" class="result-group">
             <div class="group-header">
-              <span class="group-title">📢 社区通知与公告 ({{ notices.length }})</span>
-              <span class="group-more" @click="jumpRoute(`/notices?kw=${encodeURIComponent(query)}`)">查看全部 →</span>
+              <h3 class="group-title">📢 社区通知与公告 ({{ notices.length }})</h3>
+              <button type="button" class="group-more" @click="jumpRoute(`/notices?kw=${encodeURIComponent(query)}`)">查看全部 →</button>
             </div>
-            <div
-              v-for="(item, idx) in filteredNotices"
+            <button
+              v-for="item in filteredNotices"
               :key="'notice-' + item.id"
+              type="button"
               :class="['result-row', { 'is-active': activeGlobalIndex === item.globalIdx }]"
               @click="handleItemClick(item)"
               @mouseenter="activeGlobalIndex = item.globalIdx"
             >
-              <div class="row-left">
+              <span class="row-left">
                 <span class="item-type-badge notice">公告</span>
-                <div class="row-content">
-                  <h4 class="item-title" v-safe-html="highlightKeyword(item.title)"></h4>
-                  <p class="item-desc" v-safe-html="highlightKeyword(stripHtml(item.content || item.summary || ''))"></p>
-                </div>
-              </div>
-              <div class="row-right">
+                <span class="row-content">
+                  <span class="item-title" v-safe-html="highlightKeyword(item.title)"></span>
+                  <span class="item-desc" v-safe-html="highlightKeyword(stripHtml(item.content || item.summary || ''))"></span>
+                </span>
+              </span>
+              <span class="row-right">
                 <span class="row-date">{{ formatDate(item.publishTime) }}</span>
-                <span class="enter-hint">↵</span>
-              </div>
-            </div>
+                <span class="enter-hint" aria-hidden="true">↵</span>
+              </span>
+            </button>
           </div>
 
           <!-- 2. 文体与公益活动 -->
           <div v-if="filteredActivities.length > 0" class="result-group">
             <div class="group-header">
-              <span class="group-title">🎪 文体公益活动 ({{ activities.length }})</span>
-              <span class="group-more" @click="jumpRoute('/activities')">查看全部 →</span>
+              <h3 class="group-title">🎪 文体公益活动 ({{ activities.length }})</h3>
+              <button type="button" class="group-more" @click="jumpRoute('/activities')">查看全部 →</button>
             </div>
-            <div
-              v-for="(item, idx) in filteredActivities"
+            <button
+              v-for="item in filteredActivities"
               :key="'act-' + item.id"
+              type="button"
               :class="['result-row', { 'is-active': activeGlobalIndex === item.globalIdx }]"
               @click="handleItemClick(item)"
               @mouseenter="activeGlobalIndex = item.globalIdx"
             >
-              <div class="row-left">
+              <span class="row-left">
                 <span class="item-type-badge activity">活动</span>
-                <div class="row-content">
-                  <h4 class="item-title" v-safe-html="highlightKeyword(item.title)"></h4>
-                  <p class="item-desc">📍 {{ item.location }} · ⏰ {{ item.startTime }}</p>
-                </div>
-              </div>
-              <div class="row-right">
-                <span class="quota-pill">剩余名额 {{ Math.max(0, (item.maxParticipants || 0) - (item.currentParticipants || 0)) }}</span>
-                <span class="enter-hint">↵</span>
-              </div>
-            </div>
+                <span class="row-content">
+                  <span class="item-title" v-safe-html="highlightKeyword(item.title)"></span>
+                  <span class="item-desc">📍 {{ item.location }} · ⏰ {{ item.startTime }}</span>
+                </span>
+              </span>
+              <span class="row-right">
+                <span v-if="item.status === 1" class="quota-pill">
+                  剩余名额 {{ Math.max(0, (item.maxParticipants || 0) - (item.currentParticipants || 0)) }}
+                </span>
+                <span v-else class="quota-pill is-ended">
+                  {{ item.status === 3 ? '进行中' : item.status === 2 ? '报名截止' : '已结束' }}
+                </span>
+                <span class="enter-hint" aria-hidden="true">↵</span>
+              </span>
+            </button>
           </div>
 
           <!-- 3. 邻里集市与互助求助 -->
           <div v-if="filteredMarket.length > 0" class="result-group">
             <div class="group-header">
-              <span class="group-title">🤝 邻里闲置与互助 ({{ marketPosts.length }})</span>
-              <span class="group-more" @click="jumpRoute('/market')">查看全部 →</span>
+              <h3 class="group-title">🤝 邻里闲置与互助 ({{ marketPosts.length }})</h3>
+              <button type="button" class="group-more" @click="jumpRoute('/market')">查看全部 →</button>
             </div>
-            <div
-              v-for="(item, idx) in filteredMarket"
+            <button
+              v-for="item in filteredMarket"
               :key="'market-' + item.id"
+              type="button"
               :class="['result-row', { 'is-active': activeGlobalIndex === item.globalIdx }]"
               @click="handleItemClick(item)"
               @mouseenter="activeGlobalIndex = item.globalIdx"
             >
-              <div class="row-left">
+              <span class="row-left">
                 <span class="item-type-badge market">{{ getPostTypeBadge(item.postType) }}</span>
-                <div class="row-content">
-                  <h4 class="item-title" v-safe-html="highlightKeyword(item.title)"></h4>
-                  <p class="item-desc" v-safe-html="highlightKeyword(item.description || '')"></p>
-                </div>
-              </div>
-              <div class="row-right">
+                <span class="row-content">
+                  <span class="item-title" v-safe-html="highlightKeyword(item.title)"></span>
+                  <span class="item-desc" v-safe-html="highlightKeyword(item.description || '')"></span>
+                </span>
+              </span>
+              <span class="row-right">
                 <span class="market-price">{{ item.price > 0 ? '¥' + item.price : '免费/互助' }}</span>
-                <span class="enter-hint">↵</span>
-              </div>
-            </div>
+                <span class="enter-hint" aria-hidden="true">↵</span>
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -241,13 +258,16 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Loading } from '@element-plus/icons-vue'
+import { Search as SearchIcon, Loading } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { isImeComposing } from '@/utils/ime'
 import { useUserStore } from '@/stores/user'
+import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import type { Notice, Activity, MarketPost } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
+const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
 const visible = ref(false)
 const query = ref('')
 const activeTab = ref<'all' | 'notices' | 'activities' | 'market'>('all')
@@ -344,10 +364,11 @@ async function searchImmediate() {
   activeGlobalIndex.value = 0
 
   try {
+    await initGuestCommunity()
     const [noticeRes, actRes, marketRes]: any[] = await Promise.allSettled([
-      request.get('/notice/list', { params: { keyword: kw, size: 10 } }),
-      request.get('/activity/list', { params: { keyword: kw, size: 10 } }),
-      request.get('/market/list', { params: { keyword: kw, size: 10 } })
+      request.get('/notice/list', { params: { keyword: kw, size: 10, communityId: publicCommunityParam.value } }),
+      request.get('/activity/list', { params: { keyword: kw, size: 10, communityId: publicCommunityParam.value } }),
+      request.get('/market/list', { params: { keyword: kw, size: 10, communityId: publicCommunityParam.value } })
     ])
 
     if (seq !== searchSeq) {
@@ -413,6 +434,12 @@ function navigateResults(delta: number) {
   if (next < 0) next = len - 1
   if (next >= len) next = 0
   activeGlobalIndex.value = next
+}
+
+function handleEnterKey(e: KeyboardEvent) {
+  if (isImeComposing(e)) return
+  e.preventDefault()
+  selectActiveItem()
 }
 
 function selectActiveItem() {
@@ -544,9 +571,13 @@ defineExpose({
   gap: 12px;
 }
 
+.omni-input-header:focus-within {
+  box-shadow: inset 0 -2px 0 0 var(--cal-ink, #111111);
+}
+
 .search-lead-icon {
   font-size: 20px;
-  color: var(--cal-muted, #6b7280);
+  color: var(--cal-muted, #5a6270);
 }
 
 .omni-native-input {
@@ -560,7 +591,7 @@ defineExpose({
 }
 
 .omni-native-input::placeholder {
-  color: #9ca3af;
+  color: var(--cal-muted-soft, #636b78);
   font-size: 14px;
 }
 
@@ -572,9 +603,12 @@ defineExpose({
 
 .clear-btn {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--cal-muted, #5a6270);
+  background: transparent;
+  border: none;
+  font-family: inherit;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
 }
 .clear-btn:hover {
@@ -676,14 +710,16 @@ defineExpose({
 }
 
 .clear-history-btn {
-  font-size: 11px;
-  color: #9ca3af;
+  font-size: 12px;
+  color: var(--cal-muted, #5a6270);
   background: transparent;
   border: none;
+  font-family: inherit;
+  padding: 2px 6px;
   cursor: pointer;
 }
 .clear-history-btn:hover {
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .tags-cluster {
@@ -694,12 +730,14 @@ defineExpose({
 
 .meta-tag {
   font-size: 12px;
-  padding: 4px 10px;
+  font-family: inherit;
+  border: 1px solid transparent;
+  padding: 5px 12px;
   border-radius: 6px;
   background: #f3f4f6;
   color: #374151;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .meta-tag:hover {
@@ -715,6 +753,9 @@ defineExpose({
 }
 
 .quick-link-item {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -723,7 +764,7 @@ defineExpose({
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .quick-link-item:hover {
@@ -797,8 +838,19 @@ defineExpose({
   color: #6b7280;
 }
 
+.group-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+}
+
 .group-more {
-  color: #3b82f6;
+  background: transparent;
+  border: none;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: 12px;
+  color: #2563eb;
   cursor: pointer;
 }
 .group-more:hover {
@@ -806,6 +858,11 @@ defineExpose({
 }
 
 .result-row {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -813,7 +870,7 @@ defineExpose({
   border-radius: 8px;
   margin-bottom: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .result-row:hover,
@@ -840,25 +897,28 @@ defineExpose({
 
 .item-type-badge.notice {
   background: #ede9fe;
-  color: #7c3aed;
+  color: #6d28d9;
 }
 
 .item-type-badge.activity {
   background: #d1fae5;
-  color: #059669;
+  color: #047857;
 }
 
 .item-type-badge.market {
   background: #fed7aa;
-  color: #ea580c;
+  color: #c2410c;
 }
 
 .row-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-title {
+  display: block;
   font-size: 14px;
   font-weight: 600;
   color: #111111;
@@ -869,8 +929,9 @@ defineExpose({
 }
 
 .item-desc {
+  display: block;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--cal-muted, #5a6270);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -887,7 +948,7 @@ defineExpose({
 
 .row-date {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--cal-muted, #5a6270);
 }
 
 .quota-pill {
@@ -896,6 +957,12 @@ defineExpose({
   border-radius: 12px;
   background: #ecfdf5;
   color: #059669;
+  white-space: nowrap;
+}
+
+.quota-pill.is-ended {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .market-price {
@@ -924,7 +991,7 @@ defineExpose({
   background: #f9fafb;
   border-top: 1px solid var(--cal-hairline-soft, #f3f4f6);
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--cal-muted, #5a6270);
 }
 
 .kbd-shortcuts {
@@ -972,8 +1039,10 @@ defineExpose({
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
-  .omni-tabs-bar::-webkit-scrollbar {
-    display: none;
+  @supports not (scrollbar-width: none) {
+    .omni-tabs-bar::-webkit-scrollbar {
+      display: none;
+    }
   }
   .tab-pill {
     flex-shrink: 0;
@@ -982,7 +1051,7 @@ defineExpose({
   }
   .omni-results-body {
     padding: 12px 14px;
-    max-height: 60vh;
+    max-height: 60dvh;
   }
   .quick-links-grid {
     grid-template-columns: 1fr;
@@ -994,6 +1063,17 @@ defineExpose({
   }
   .kbd-shortcuts {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .meta-tag,
+  .clear-btn,
+  .clear-history-btn,
+  .tab-pill {
+    min-block-size: 40px;
+    display: inline-flex;
+    align-items: center;
   }
 }
 </style>

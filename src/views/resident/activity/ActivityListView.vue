@@ -39,12 +39,21 @@
         </el-radio-group>
       </div>
 
-      <el-input
-        v-model="searchKw"
-        placeholder="搜索活动名称或地点..."
-        clearable
-        style="width: 220px"
-      />
+      <search aria-label="活动筛选搜索">
+        <label for="activity-search-input" class="visually-hidden">搜索活动名称或地点</label>
+        <el-input
+          id="activity-search-input"
+          v-model="searchKw"
+          type="search"
+          enterkeyhint="search"
+          placeholder="搜索活动名称或地点..."
+          :prefix-icon="SearchIcon"
+          clearable
+          style="width: 240px; max-width: 100%"
+          @keydown.enter="handleSearchEnter"
+          @clear="resetAndLoad"
+        />
+      </search>
     </div>
 
     <!-- 活动卡片网格 -->
@@ -60,7 +69,7 @@
         @click="$router.push(`/activities/${act.id}`)"
       >
         <div class="cover-wrapper">
-          <img :src="act.coverImage || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800'" class="cover-img" />
+          <img :src="act.coverImage || DEFAULT_COVER" :alt="act.title" loading="lazy" class="cover-img" />
           <span class="status-overlay cal-badge" :class="getStatusBadgeClass(act.status)">
             {{ getStatusText(act.status) }}
           </span>
@@ -68,7 +77,11 @@
         </div>
 
         <div class="card-body">
-          <h3 class="act-title">{{ act.title }}</h3>
+          <h2 class="act-title">
+            <router-link :to="`/activities/${act.id}`" class="act-title-link" @click.stop>
+              {{ act.title }}
+            </router-link>
+          </h2>
           <p class="act-desc">{{ act.description }}</p>
 
           <div class="act-meta">
@@ -191,7 +204,7 @@
           <p class="ticket-loc">📍 集合地点：{{ ticket.location || '社区邻里活动中心' }}</p>
 
           <div class="qr-code-box">
-            <img :src="ticket.myQrCodeBase64 || ticket.qrCodeUrl || ''" class="qr-img" />
+            <img :src="ticket.myQrCodeBase64 || ticket.qrCodeUrl || ''" alt="活动入场核销二维码" class="qr-img" />
             <div class="code-val">动态验证码：<strong>{{ ticket.myVerifyCode || ticket.verifyCode || '------' }}</strong></div>
             <p class="qr-hint">活动现场请主动出示此动态核销码供网格工作人员扫码核验</p>
             <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px">
@@ -226,17 +239,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Search as SearchIcon } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
+import { DEFAULT_COVER } from '@/constants/defaults'
+import { isImeComposing } from '@/utils/ime'
 import type { Activity } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
+
+function handleSearchEnter(event: Event) {
+  if (isImeComposing(event)) return
+  resetAndLoad()
+}
 
 const category = ref('')
 const statusFilter = ref<'all' | 'open' | 'signed'>('all')
@@ -362,6 +383,9 @@ async function loadActivities() {
     }
     if (category.value) {
       params.category = category.value
+    }
+    if (searchKw.value.trim()) {
+      params.keyword = searchKw.value.trim()
     }
     const res: any = await request.get('/activity/list', { params: { ...params, communityId: publicCommunityParam.value } })
     activities.value = res.records || []
@@ -523,6 +547,16 @@ function getStatusBadgeClass(status: number) {
   font-weight: 600;
   color: var(--cal-ink);
   margin-bottom: 6px;
+}
+.act-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.act-title-link:hover,
+.act-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .act-desc {

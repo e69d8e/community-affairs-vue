@@ -16,11 +16,11 @@
 
     <div class="submit-card cal-mockup-card">
       <div class="card-title-row">
-        <h2 class="cal-display-sm">在线提报工单</h2>
+        <h1 class="cal-display-sm">在线提报工单</h1>
         <p class="card-sub">如遇设施故障、管道漏水、违规占用或公共安全隐患，请准确描述并上传清晰现场照片</p>
       </div>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="order-form">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" scroll-to-error class="order-form" @submit.prevent="handleSubmit">
         <el-form-item label="事务类型" prop="orderType">
           <el-radio-group v-model="form.orderType" size="large">
             <el-radio-button :value="1">🛠️ 设施/房屋报修</el-radio-button>
@@ -46,19 +46,25 @@
 
         <!-- AI 智能帮我填报卡片 -->
         <div class="ai-smart-fill-card">
-          <div class="ai-fill-header" @click="toggleAiInput">
-            <div class="header-left">
-              <span class="sparkle-icon">✨</span>
+          <button
+            type="button"
+            class="ai-fill-header"
+            :aria-expanded="showAiInput"
+            aria-controls="ai-smart-fill-body"
+            @click="toggleAiInput"
+          >
+            <span class="header-left">
+              <span class="sparkle-icon" aria-hidden="true">✨</span>
               <span class="ai-title">AI 智能帮我填报</span>
               <span class="ai-pill">口语化/一句话自动结构化</span>
-            </div>
-            <el-button link type="primary" size="small" class="toggle-btn">
+            </span>
+            <span class="toggle-btn">
               {{ showAiInput ? '收起' : '展开体验' }}
-              <el-icon class="el-icon--right"><component :is="showAiInput ? ArrowUp : ArrowDown" /></el-icon>
-            </el-button>
-          </div>
+              <el-icon class="el-icon--right" aria-hidden="true"><component :is="showAiInput ? ArrowUp : ArrowDown" /></el-icon>
+            </span>
+          </button>
           <el-collapse-transition>
-            <div v-show="showAiInput" class="ai-fill-body">
+            <div v-show="showAiInput" id="ai-smart-fill-body" class="ai-fill-body">
               <el-input
                 v-model="aiRawInput"
                 type="textarea"
@@ -156,23 +162,24 @@
                 <button
                   type="button"
                   class="remove-photo-btn"
-                  title="删除该照片"
+                  aria-label="删除该照片"
                   @click="fileList.splice(idx, 1)"
                 >
-                  <el-icon><Close /></el-icon>
+                  <el-icon aria-hidden="true"><Close /></el-icon>
                 </button>
               </div>
 
               <!-- 上传卡片触发器 (少于4张时展示) -->
-              <div
+              <button
                 v-if="fileList.length < 4"
+                type="button"
                 class="photo-add-card"
                 @click="showOrderCropper = true"
               >
-                <el-icon :size="24"><Plus /></el-icon>
+                <el-icon :size="24" aria-hidden="true"><Plus /></el-icon>
                 <span class="add-text">添加现场照片</span>
                 <span class="add-sub">{{ fileList.length }}/4 张</span>
-              </div>
+              </button>
             </div>
             <div class="upload-hint">支持上传水管跑冒滴漏、电梯告示牌、路灯故障或违规占道现场清晰照片</div>
           </div>
@@ -185,7 +192,7 @@
 
         <div class="submit-actions">
           <el-button size="large" @click="handleCancel">取消</el-button>
-          <el-button type="primary" size="large" :loading="submitting" @click="handleSubmit">
+          <el-button type="primary" native-type="submit" size="large" :loading="submitting">
             确认提交申报
           </el-button>
         </div>
@@ -488,6 +495,7 @@ async function handleSubmit() {
 }
 
 .ai-fill-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -495,7 +503,18 @@ async function handleSubmit() {
   cursor: pointer;
   user-select: none;
   background: rgba(239, 246, 255, 0.6);
+  border: none;
   border-bottom: 1px solid rgba(191, 219, 254, 0.5);
+  font: inherit;
+  text-align: left;
+}
+.ai-fill-header .toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d4ed8;
 }
 
 .ai-fill-header .header-left {
@@ -543,6 +562,10 @@ async function handleSubmit() {
   background: #2563eb !important;
   border-color: #2563eb !important;
   font-weight: 600;
+}
+
+.ai-parse-btn :deep(.el-icon) {
+  margin-right: 4px;
 }
 
 /* 快捷模板栏 */
@@ -618,8 +641,8 @@ async function handleSubmit() {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.65);
   color: #fff;
@@ -629,7 +652,14 @@ async function handleSubmit() {
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  transition: background 0.15s;
+  transition: background-color 0.15s ease;
+}
+@media (pointer: coarse) {
+  .remove-photo-btn::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
 }
 
 .remove-photo-btn:hover {
@@ -639,6 +669,8 @@ async function handleSubmit() {
 .photo-add-card {
   width: 96px;
   height: 96px;
+  padding: 0;
+  font: inherit;
   border-radius: 8px;
   border: 1.5px dashed #cbd5e1;
   background: #f8fafc;
@@ -648,8 +680,8 @@ async function handleSubmit() {
   justify-content: center;
   gap: 4px;
   cursor: pointer;
-  color: #64748b;
-  transition: all 0.15s ease;
+  color: #475569;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
 .photo-add-card:hover {

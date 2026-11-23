@@ -3,7 +3,7 @@
     <!-- 欢迎与快捷栏 (Cal Mockup Card) -->
     <div class="welcome-banner cal-mockup-card">
       <div>
-        <h2 class="welcome-title">欢迎工作台，{{ userStore.user?.realName || userStore.user?.username }}！</h2>
+        <h1 class="welcome-title">欢迎工作台，{{ userStore.user?.realName || userStore.user?.username }}！</h1>
         <p class="welcome-desc">今日{{ userStore.user?.communityName || '社区' }}运行平稳，网格与物业工单流转正常。</p>
       </div>
       <div class="banner-quick-actions">
@@ -18,141 +18,145 @@
 
     <!-- 核心统计指标卡片网格 (点击卡片直接穿透至对应管理模块) -->
     <div class="metrics-grid">
-      <div
+      <component
+        :is="userStore.canManageUsers ? 'button' : 'div'"
+        :type="userStore.canManageUsers ? 'button' : undefined"
         class="metric-card cal-mockup-card"
         :class="{ 'is-clickable': userStore.canManageUsers }"
-        :title="userStore.canManageUsers ? '点击进入用户与居民管理' : ''"
         @click="userStore.canManageUsers && $router.push('/admin/system/users')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">在册住户居民</span>
-          <span class="metric-icon-mini icon-blue">🏡</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-blue" aria-hidden="true">🏡</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num">{{ metrics?.totalResidents || 0 }}</span>
           <span class="unit">户</span>
-        </div>
-        <div v-if="userStore.canManageUsers" class="metric-sub-note">点击进入用户与居民管理 →</div>
-        <div v-else class="metric-sub-note">覆盖全区 6 栋楼宇</div>
-      </div>
+        </span>
+        <span v-if="userStore.canManageUsers" class="metric-sub-note">点击进入用户与居民管理 →</span>
+        <span v-else class="metric-sub-note">覆盖全区 6 栋楼宇</span>
+      </component>
 
-      <div
+      <button
+        type="button"
         class="metric-card cal-mockup-card is-clickable"
-        title="点击筛选待初审工单"
         @click="$router.push('/admin/orders?status=1')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">待初审 / 待派工单</span>
-          <span class="metric-icon-mini icon-red">🛠️</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-red" aria-hidden="true">🛠️</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num text-red">{{ metrics?.pendingOrders || 0 }}</span>
           <span class="unit">件</span>
-        </div>
-        <div class="metric-sub-note">点击立即初审派工 →</div>
-      </div>
+        </span>
+        <span class="metric-sub-note">点击立即初审派工 →</span>
+      </button>
 
-      <div
+      <button
+        type="button"
         class="metric-card cal-mockup-card is-clickable"
-        title="点击查看施工中工单"
         @click="$router.push('/admin/orders?status=4')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">维修师傅施工中</span>
-          <span class="metric-icon-mini icon-amber">⚡</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-amber" aria-hidden="true">⚡</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num text-amber">{{ metrics?.processingOrders || 0 }}</span>
           <span class="unit">件</span>
-        </div>
-        <div class="metric-sub-note">物业工程部巡修 →</div>
-      </div>
+        </span>
+        <span class="metric-sub-note">物业工程部巡修 →</span>
+      </button>
 
-      <div
+      <button
+        type="button"
         class="metric-card cal-mockup-card is-clickable"
-        title="点击查看已办结好评工单"
         @click="$router.push('/admin/orders?status=6')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">报修办结好评率</span>
-          <span class="metric-icon-mini icon-emerald">✅</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-emerald" aria-hidden="true">✅</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num text-emerald">{{ metrics?.repairFinishRate || 100 }}</span>
           <span class="unit">%</span>
-        </div>
-        <div class="metric-sub-note">基于 5 星好评统计 →</div>
-      </div>
+        </span>
+        <span class="metric-sub-note">基于 5 星好评统计 →</span>
+      </button>
 
-      <div
+      <component
+        :is="userStore.canManageActivities ? 'button' : 'div'"
+        :type="userStore.canManageActivities ? 'button' : undefined"
         class="metric-card cal-mockup-card"
         :class="{ 'is-clickable': userStore.canManageActivities }"
-        :title="userStore.canManageActivities ? '点击管理社区文体活动' : ''"
         @click="userStore.canManageActivities && $router.push('/admin/activities')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">报名中文体活动</span>
-          <span class="metric-icon-mini icon-indigo">🎫</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-indigo" aria-hidden="true">🎫</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num">{{ metrics?.activeActivities || 0 }}</span>
           <span class="unit">项</span>
-        </div>
-        <div v-if="userStore.canManageActivities" class="metric-sub-note">管理活动与核销 →</div>
-        <div v-else class="metric-sub-note">由社区管委会统筹组织</div>
-      </div>
+        </span>
+        <span v-if="userStore.canManageActivities" class="metric-sub-note">管理活动与核销 →</span>
+        <span v-else class="metric-sub-note">由社区管委会统筹组织</span>
+      </component>
 
-      <div
+      <button
+        type="button"
         class="metric-card cal-mockup-card is-clickable"
-        title="点击查看邻里闲置集市"
         @click="$router.push('/market')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">本月邻里闲置互助</span>
-          <span class="metric-icon-mini icon-purple">🛍️</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-purple" aria-hidden="true">🛍️</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num">{{ metrics?.monthlyPostCount || 0 }}</span>
           <span class="unit">条</span>
-        </div>
-        <div class="metric-sub-note">物品流转与借用 →</div>
-      </div>
+        </span>
+        <span class="metric-sub-note">物品流转与借用 →</span>
+      </button>
 
-      <div
+      <component
+        :is="userStore.canHandleReports ? 'button' : 'div'"
+        :type="userStore.canHandleReports ? 'button' : undefined"
         class="metric-card cal-mockup-card"
         :class="{ 'is-clickable': userStore.canHandleReports }"
-        :title="userStore.canHandleReports ? '点击处理违规举报' : ''"
         @click="userStore.canHandleReports && $router.push('/admin/moderation/reports')"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">待核处违规举报</span>
-          <span class="metric-icon-mini icon-rose">⚠️</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-rose" aria-hidden="true">⚠️</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num text-rose">{{ metrics?.openReports || 0 }}</span>
           <span class="unit">条</span>
-        </div>
-        <div v-if="userStore.canHandleReports" class="metric-sub-note">违规内容与举报裁决 →</div>
-        <div v-else class="metric-sub-note">由社区与网格员受理核处</div>
-      </div>
+        </span>
+        <span v-if="userStore.canHandleReports" class="metric-sub-note">违规内容与举报裁决 →</span>
+        <span v-else class="metric-sub-note">由社区与网格员受理核处</span>
+      </component>
 
-      <div
+      <component
+        :is="userStore.canPublishNotice ? 'button' : 'div'"
+        :type="userStore.canPublishNotice ? 'button' : undefined"
         class="metric-card cal-mockup-card"
         :class="{ 'is-clickable': userStore.canPublishNotice }"
-        :title="userStore.canPublishNotice ? '点击打开发布通告弹窗' : ''"
         @click="userStore.canPublishNotice && (showNoticeModal = true)"
       >
-        <div class="metric-header">
+        <span class="metric-header">
           <span class="metric-label">累计发布政策通告</span>
-          <span class="metric-icon-mini icon-teal">📢</span>
-        </div>
-        <div class="metric-num-wrap">
+          <span class="metric-icon-mini icon-teal" aria-hidden="true">📢</span>
+        </span>
+        <span class="metric-num-wrap">
           <span class="metric-num">{{ metrics?.totalNotices || 0 }}</span>
           <span class="unit">篇</span>
-        </div>
-        <div v-if="userStore.canPublishNotice" class="metric-sub-note">+ 点击快速发布新通告</div>
-        <div v-else class="metric-sub-note">由社区与物业发布</div>
-      </div>
+        </span>
+        <span v-if="userStore.canPublishNotice" class="metric-sub-note">+ 点击快速发布新通告</span>
+        <span v-else class="metric-sub-note">由社区与物业发布</span>
+      </component>
     </div>
 
     <!-- 下方快捷管理与处置面板 -->
@@ -160,43 +164,51 @@
       <!-- 待办工单快捷初审与派单 -->
       <div v-if="isDev" class="panel-card cal-mockup-card">
         <div class="panel-header">
-          <h3 class="panel-title">🛠️ 待处理报修与投诉工单 (支持工作台直接派单)</h3>
+          <h2 class="panel-title">🛠️ 待处理报修与投诉工单 (支持工作台直接派单)</h2>
           <el-button link type="primary" class="cal-link" @click="$router.push('/admin/orders')">查看完整工单流转 →</el-button>
         </div>
 
-        <el-table :data="pendingOrdersList" style="width: 100%" size="small">
-          <el-table-column prop="orderNo" label="单号" width="130">
+        <div class="table-scroll-region" tabindex="0" role="region" aria-label="待处理工单列表">
+          <el-table :data="pendingOrdersList" style="width: 100%" size="small">
+          <el-table-column prop="orderNo" label="单号" width="156">
             <template #default="{ row }">
               <span class="order-code">#{{ row.orderNo }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="title" label="标题" show-overflow-tooltip />
-          <el-table-column prop="orderType" label="类型" width="76">
+          <el-table-column prop="title" label="标题" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="orderType" label="类型" width="64">
             <template #default="{ row }">
               <span class="cal-badge" :class="row.orderType === 1 ? 'cal-badge-gray' : 'cal-badge-orange'">
                 {{ row.orderType === 1 ? '报修' : '投诉' }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="reporterName" label="居民" width="84" />
-          <el-table-column prop="createTime" label="提交时间" width="150" />
-          <el-table-column label="快捷操作" width="150">
+          <el-table-column prop="reporterName" label="居民" width="84" show-overflow-tooltip />
+          <el-table-column prop="createTime" label="提交时间" width="142">
             <template #default="{ row }">
-              <el-button type="primary" size="small" style="height: 24px; padding: 0 8px; font-size: 12px" @click="openQuickDispatch(row)">
-                ⚡ 当场派单
-              </el-button>
-              <el-button type="info" link size="small" @click="$router.push(`/admin/orders?id=${row.id}`)">
-                详情
-              </el-button>
+              <span>{{ (row.createTime || '').slice(0, 16) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="快捷操作" width="150" fixed="right">
+            <template #default="{ row }">
+              <div class="quick-op-row">
+                <el-button type="primary" size="small" style="min-height: 28px; padding: 2px 10px; font-size: 12px" @click="openQuickDispatch(row)">
+                  ⚡ 当场派单
+                </el-button>
+                <el-button type="info" link size="small" @click="$router.push(`/admin/orders?id=${row.id}`)">
+                  详情
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </div>
 
       <!-- 系统状态与中间件运行健康度 -->
       <div v-if="isDev" class="panel-card cal-mockup-card">
         <div class="panel-header">
-          <h3 class="panel-title">🖥️ 系统核心服务运行监测</h3>
+          <h2 class="panel-title">🖥️ 系统核心服务运行监测</h2>
           <span class="cal-badge cal-badge-emerald">全部服务运行正常</span>
         </div>
 
@@ -271,7 +283,7 @@
           :key="tpl.label"
           size="small"
           round
-          style="height: 24px; font-size: 12px"
+          style="min-height: 28px; padding: 2px 10px; font-size: 12px"
           @click="noticeForm.title = tpl.title; noticeForm.noticeType = tpl.type; noticeForm.content = tpl.content"
         >
           {{ tpl.label }}
@@ -506,10 +518,13 @@ async function handlePublishNotice() {
 }
 
 .metric-card {
+  width: 100%;
+  font: inherit;
+  text-align: left;
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .metric-card.is-clickable {
@@ -522,6 +537,7 @@ async function handlePublishNotice() {
 }
 
 .metric-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -585,7 +601,7 @@ async function handlePublishNotice() {
 
 .panels-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 420px);
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 340px);
   gap: 20px;
 }
 
@@ -622,6 +638,18 @@ async function handlePublishNotice() {
   font-family: var(--font-code);
   font-size: 12px;
   color: var(--cal-muted);
+  white-space: nowrap;
+}
+
+.quick-op-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.quick-op-row :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .service-health-list {

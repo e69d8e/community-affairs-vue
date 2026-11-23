@@ -108,16 +108,16 @@
         </div>
 
         <!-- 右侧：二维码与动态核销码 -->
-        <div class="pass-qr-section" @click="openQrZoom(ticket)" title="点击放大二维码">
-          <div class="qr-card-box">
+        <button type="button" class="pass-qr-section" aria-label="点击放大活动核销二维码" @click="openQrZoom(ticket)">
+          <span class="qr-card-box">
             <img :src="getQrCodeUrl(ticket)" class="qr-image" alt="活动核销二维码" />
-          </div>
-          <div class="verify-code-box">
+          </span>
+          <span class="verify-code-box">
             <span class="code-title">动态核销码</span>
             <span class="code-number">{{ getVerifyCode(ticket) }}</span>
-          </div>
+          </span>
           <span class="qr-zoom-pill">点击放大出示</span>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -135,7 +135,7 @@
         <p class="zoom-meta">📍 {{ selectedTicket.location || '社区邻里中心' }}</p>
 
         <div class="zoom-qr-box">
-          <img :src="getQrCodeUrl(selectedTicket)" class="zoom-qr-img" />
+          <img :src="getQrCodeUrl(selectedTicket)" alt="活动入场核销二维码" class="zoom-qr-img" />
           <div class="zoom-code-number">
             <span>6位核销码：</span>
             <strong>{{ getVerifyCode(selectedTicket) }}</strong>
@@ -409,6 +409,9 @@ defineExpose({
   width: 210px;
   padding: 18px;
   background: var(--cal-canvas);
+  border: none;
+  font: inherit;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -419,6 +422,7 @@ defineExpose({
 }
 
 .qr-card-box {
+  display: block;
   width: 108px;
   height: 108px;
   padding: 5px;

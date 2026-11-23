@@ -1,10 +1,12 @@
 <template>
   <div class="admin-layout">
+    <a href="#admin-main-content" class="skip-link visually-hidden">跳转到工作台内容</a>
+
     <!-- 移动端暗色背景遮罩 -->
-    <div v-if="mobileMenuOpen" class="sidebar-backdrop" @click="mobileMenuOpen = false"></div>
+    <div v-if="mobileMenuOpen" class="sidebar-backdrop" aria-hidden="true" @click="mobileMenuOpen = false"></div>
 
     <!-- 侧边导航栏 (Cal.com surface-dark: #101010) -->
-    <aside :class="['sidebar', { collapsed: isCollapsed, 'mobile-open': mobileMenuOpen }]">
+    <aside :class="['sidebar', { collapsed: isCollapsed, 'mobile-open': mobileMenuOpen }]" aria-label="管理控制台导航">
       <div class="sidebar-header">
         <span class="logo-icon">🏡</span>
         <span v-if="!isCollapsed || mobileMenuOpen" class="logo-text">事务治理工作台</span>
@@ -106,7 +108,14 @@
           <NotificationPopover />
 
           <!-- 综合指挥大屏快捷入口 (社区管理员监管职责) -->
-          <router-link v-if="userStore.canViewScreen" to="/screen" target="_blank" class="screen-btn-link">
+          <router-link
+            v-if="userStore.canViewScreen"
+            to="/screen"
+            target="_blank"
+            rel="noopener"
+            aria-label="在新标签页打开智慧社区综合指挥大屏"
+            class="screen-btn-link"
+          >
             <el-button class="cal-screen-btn" size="small">
               <span class="btn-text-full">🖥️ 综合指挥大屏</span>
               <span class="btn-text-mini">🖥️ 大屏</span>
@@ -123,11 +132,11 @@
 
           <!-- 用户头像与下拉菜单 -->
           <el-dropdown trigger="click" @command="handleUserCommand">
-            <div class="user-dropdown-btn">
-              <el-avatar :size="30" :src="userStore.user?.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
+            <button type="button" class="user-dropdown-btn" aria-label="打开管理账号菜单">
+              <el-avatar :size="30" :src="userStore.user?.avatar || DEFAULT_AVATAR" />
               <span class="user-name">{{ userStore.user?.realName || userStore.user?.username }}</span>
-              <el-icon class="arrow-icon"><ArrowDown /></el-icon>
-            </div>
+              <el-icon class="arrow-icon" aria-hidden="true"><ArrowDown /></el-icon>
+            </button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="profile">个人中心</el-dropdown-item>
@@ -141,7 +150,7 @@
       </header>
 
       <!-- 页面视图主体内容 -->
-      <main class="content-body">
+      <main id="admin-main-content" tabindex="-1" class="content-body">
         <router-view v-slot="{ Component }">
           <transition name="page-fade" mode="out-in">
             <component :is="Component" />
@@ -172,6 +181,7 @@ import {
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
+import { DEFAULT_AVATAR } from '@/constants/defaults'
 import NotificationPopover from '@/components/common/NotificationPopover.vue'
 
 const route = useRoute()
@@ -234,6 +244,7 @@ function getRoleTitle(role?: string) {
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--cal-surface-soft);
 }
 
@@ -434,9 +445,11 @@ function getRoleTitle(role?: string) {
   gap: 8px;
   cursor: pointer;
   padding: 4px 10px;
+  background: transparent;
+  font-family: inherit;
   border-radius: var(--radius-pill);
   border: 1px solid var(--cal-hairline);
-  transition: all 0.15s;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .user-dropdown-btn:hover {
   background: var(--cal-surface-soft);

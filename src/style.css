@@ -21,6 +21,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   /* ---------------------------------------------------------
      1. Brand & Surface Colors (Cal.com Palette)
      --------------------------------------------------------- */
@@ -29,8 +31,8 @@
   --cal-primary-disabled: #e5e7eb;
   --cal-ink: #111111;
   --cal-body: #374151;
-  --cal-muted: #6b7280;
-  --cal-muted-soft: #898989;
+  --cal-muted: #5a6270;
+  --cal-muted-soft: #636b78;
   --cal-hairline: #e5e7eb;
   --cal-hairline-soft: #f3f4f6;
   --cal-canvas: #ffffff;
@@ -43,6 +45,8 @@
   --cal-on-dark: #ffffff;
   --cal-on-dark-soft: #a1a1aa;
   --cal-brand-accent: #3b82f6;
+  --scrollbar-thumb: #6b7280;
+  --scrollbar-track: transparent;
 
   /* ---------------------------------------------------------
      2. Semantic Colors & Badge Pastels
@@ -157,14 +161,11 @@
 html, body {
   width: 100%;
   min-height: 100%;
-  overflow-x: hidden;
 }
 
-/* AI 百事通抽屉打开时锁定视口，防止底层背景滚动穿透 (Scroll Chaining) */
-html.ai-drawer-locked,
-body.ai-drawer-locked {
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 body {
@@ -172,6 +173,7 @@ body {
   color: var(--cal-body);
   background-color: var(--cal-canvas);
   line-height: 1.5;
+  overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -182,25 +184,85 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.25;
 }
 
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+p, li {
+  text-wrap: pretty;
+}
+
+search {
+  display: block;
+}
+
+img, video {
+  max-inline-size: 100%;
+}
+
+:where(a, code) {
+  overflow-wrap: anywhere;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* 统一轻质滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* 键盘焦点可见环与 Skip Link 辅助类 */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: var(--cal-primary);
+  color: var(--cal-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  outline: 2px solid var(--cal-brand-accent);
+  outline-offset: 2px;
 }
-::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
-  border-radius: var(--radius-pill);
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--cal-ink);
+  outline-offset: 2px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
+
+/* 标准滚动条优先；不支持 scrollbar-color 的旧版 WebKit 回退 */
+@supports not (scrollbar-color: auto) {
+  html {
+    scrollbar-width: auto;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: var(--radius-pill);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--cal-ink);
+  }
 }
 
 /* ==========================================================================
@@ -288,11 +350,12 @@ a {
 .cal-pill-item {
   padding: 6px 14px;
   border-radius: var(--radius-pill);
+  border: 1px solid transparent;
   font-size: 14px;
   font-weight: 500;
   color: var(--cal-muted);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -307,6 +370,7 @@ a {
   background-color: var(--cal-canvas);
   color: var(--cal-ink);
   font-weight: 600;
+  border-color: var(--cal-hairline);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -316,13 +380,15 @@ a {
   border-radius: var(--radius-lg);
   padding: 28px;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.cal-feature-card:hover {
-  border-color: var(--cal-hairline);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+@media (prefers-reduced-motion: no-preference) {
+  .cal-feature-card:hover {
+    border-color: var(--cal-hairline);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 /* 3. product-mockup-card 纯白细边框卡片 */
@@ -360,25 +426,25 @@ a {
 
 .cal-badge-orange {
   background-color: #fff7ed;
-  color: #ea580c;
+  color: #c2410c;
   border: 1px solid #ffedd5;
 }
 
 .cal-badge-pink {
   background-color: #fdf2f8;
-  color: #db2777;
+  color: #be185d;
   border: 1px solid #fce7f3;
 }
 
 .cal-badge-violet {
   background-color: #f5f3ff;
-  color: #7c3aed;
+  color: #6d28d9;
   border: 1px solid #ede9fe;
 }
 
 .cal-badge-emerald {
   background-color: #ecfdf5;
-  color: #059669;
+  color: #047857;
   border: 1px solid #d1fae5;
 }
 
@@ -416,7 +482,7 @@ a {
   font-family: var(--font-body);
   font-weight: 600;
   border-radius: var(--radius-md);
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
 
 .el-button--primary:not(.is-link):not(.is-text) {
@@ -770,54 +836,61 @@ a {
    Interactive Experience Enhancements (Tactile Feedback & Transitions)
    ========================================================================== */
 
-/* 1. Modal Backdrop Blur */
+/* 1. Modal Backdrop Blur & Scroll Containment */
 .el-overlay {
   backdrop-filter: blur(6px) !important;
   background-color: rgba(0, 0, 0, 0.45) !important;
-  transition: all 0.25s ease !important;
+  overscroll-behavior: contain;
+  transition: opacity 0.25s ease, background-color 0.25s ease !important;
 }
 
 /* 2. Tactile Button & Link Active State */
-button:active:not(:disabled),
-.el-button:active:not(:disabled),
-.cta-primary-btn:active,
-.cta-secondary-btn:active,
-.hot-pill:active,
-.cal-pill-item:active {
-  transform: scale(0.97) !important;
-  transition: transform 0.08s ease;
-}
-
-/* 3. Smooth Card Hover Elevation & Spring Lift */
 .cal-feature-card,
 .activity-card,
 .activity-item-card,
 .market-card,
 .order-card {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
 }
 
-.cal-feature-card:hover,
-.activity-card:hover,
-.activity-item-card:hover,
-.market-card:hover,
-.order-card:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08) !important;
-}
+@media (prefers-reduced-motion: no-preference) {
+  button:active:not(:disabled),
+  .el-button:active:not(:disabled),
+  .cta-primary-btn:active,
+  .cta-secondary-btn:active,
+  .hot-pill:active,
+  .cal-pill-item:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.08s ease;
+  }
 
-/* 4. Page Route Fade Transitions */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateY(4px);
-}
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
+  .cal-feature-card:hover,
+  .activity-card:hover,
+  .activity-item-card:hover,
+  .market-card:hover,
+  .order-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* 4. Page Route Fade Transitions */
+  .page-fade-enter-active,
+  .page-fade-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .page-fade-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  .page-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  .cal-backtop:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
 }
 
 /* 5. Cal Back-to-Top Floating Widget */
@@ -828,12 +901,8 @@ button:active:not(:disabled),
   border-radius: 50% !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  transition: all 0.2s ease !important;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
   z-index: 2000 !important;
-}
-.cal-backtop:hover {
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* 6. Clickable cursor utility */
@@ -842,6 +911,34 @@ button:active:not(:disabled),
 }
 .clickable:hover {
   background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* 7. Table keyboard-scrollable region wrapper */
+.table-scroll-region {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+
+/* 8. Coarse Pointer Touch Target Floor & High Contrast (Forced Colors) */
+@media (pointer: coarse) {
+  .cal-pill-item,
+  .drawer-nav-item,
+  .el-radio-button__inner {
+    min-block-size: 40px;
+  }
+}
+
+@media (forced-colors: active) {
+  .cal-pill-item.active {
+    border: 2px solid Highlight !important;
+    outline: 1px solid Highlight;
+  }
+  .cal-badge {
+    border: 1px solid CanvasText !important;
+  }
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid Highlight !important;
+  }
 }
 
 

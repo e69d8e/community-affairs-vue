@@ -2,7 +2,7 @@
   <div class="report-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">违规与矛盾纠纷举报处理中心</h2>
+        <h1 class="page-title">违规与矛盾纠纷举报处理中心</h1>
         <p class="page-sub">邻里闲置违禁、不当言论及矛盾投诉受理审核，支持一键违规下架与闭环反馈</p>
       </div>
       <div class="header-actions">
@@ -17,6 +17,7 @@
 
     <!-- 表格 -->
     <div class="table-card card-hover">
+      <div class="table-scroll-region" tabindex="0" role="region" aria-label="违规举报处理列表">
       <el-table v-loading="loading" :data="reports" style="width: 100%">
         <el-table-column prop="id" label="编号" width="90" />
         <el-table-column prop="targetType" label="举报对象类型" width="140">
@@ -52,6 +53,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination

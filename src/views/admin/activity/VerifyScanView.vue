@@ -2,7 +2,7 @@
   <div class="verify-scan-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">活动现场核销与签到</h2>
+        <h1 class="page-title">活动现场核销与签到</h1>
         <p class="page-sub">核验居民出示的活动核销码或电子凭证，办理现场签到入场</p>
       </div>
       <div class="header-actions">
@@ -15,7 +15,7 @@
     <div class="verify-layout">
       <!-- 左侧操作台 -->
       <div class="verify-card card-hover">
-        <h3 class="card-title">活动核销与签到录入</h3>
+        <h2 class="card-title">活动核销与签到录入</h2>
 
         <el-form label-position="top" class="verify-form">
           <el-form-item label="所属活动 (点击胶囊快速切换)">
@@ -25,10 +25,11 @@
                 :key="act.id"
                 type="button"
                 class="act-pill"
-                :class="{ active: String(selectedActivityId) === String(act.id) }"
+                :class="{ active: String(selectedActivityId) === String(act.id), 'is-ended': act.status === 4 || act.status === 5 }"
                 @click="selectedActivityId = act.id"
               >
-                {{ act.title }}
+                <span class="pill-title">{{ act.title }}</span>
+                <span v-if="act.status === 4 || act.status === 5" class="pill-status-tag">已结束</span>
               </button>
             </div>
             <el-select
@@ -40,7 +41,7 @@
               <el-option
                 v-for="act in activeActivities"
                 :key="act.id"
-                :label="`${act.title} (${act.location})`"
+                :label="formatActivityOptionLabel(act)"
                 :value="act.id"
               />
             </el-select>
@@ -50,15 +51,17 @@
             <div class="verify-input-row">
               <el-input
                 v-model="verifyCode"
+                inputmode="numeric"
+                enterkeyhint="done"
                 placeholder="请输入居民展示的 6 位数字码"
                 size="large"
                 maxlength="6"
                 clearable
                 class="verify-input"
-                @keyup.enter="handleVerify"
+                @keydown.enter="handleVerifyEnter"
               />
               <el-button size="large" plain @click="handlePasteCode">
-                📋 粘贴
+                <span class="btn-icon-gap">📋</span>粘贴
               </el-button>
             </div>
 
@@ -87,12 +90,12 @@
             :disabled="!selectedActivityId || verifyCode.length !== 6"
             @click="handleVerify"
           >
-            ⚡ 立即核销签到 ({{ verifyCode.length }}/6)
+            <span class="btn-icon-gap">⚡</span>立即核销签到 ({{ verifyCode.length }}/6)
           </el-button>
         </el-form>
 
         <div class="scan-tips">
-          <h4>💡 核销说明：</h4>
+          <h3>💡 核销说明：</h3>
           <p>1. 居民在“活动详情”或“个人中心 - 活动凭证”中可出示或复制核销码；</p>
           <p>2. 支持上方触屏数字键盘点按录入，或点击【📋 粘贴】一键填入；</p>
           <p>3. 签到成功后参与数据将实时更新至管理看板与数据中心。</p>
@@ -101,7 +104,7 @@
 
       <!-- 右侧核销成功反馈卡片与历史 -->
       <div class="result-card card-hover">
-        <h3 class="card-title">现场签到核验结果</h3>
+        <h2 class="card-title">现场签到核验结果</h2>
 
         <div v-if="lastVerifiedResult" class="verified-box animate-fade-in">
           <div class="stamp-wrap">
@@ -111,7 +114,7 @@
           <div class="resident-profile-row">
             <div class="res-avatar">👤</div>
             <div class="res-info">
-              <h4 class="res-name">{{ lastVerifiedResult.realName || '居民' }}</h4>
+              <h3 class="res-name">{{ lastVerifiedResult.realName || '居民' }}</h3>
               <p class="res-phone">📱 联络手机：{{ lastVerifiedResult.phone }}</p>
               <p class="res-code">🎫 核销凭证号：<strong>{{ lastVerifiedResult.verifyCode }}</strong></p>
               <p class="res-time">⏰ 签到时间：{{ lastVerifiedResult.verifyTime || '刚刚' }}</p>
@@ -125,7 +128,7 @@
 
         <el-divider />
 
-        <h4 class="history-title">本次会话核销记录 ({{ historyList.length }})</h4>
+        <h3 class="history-title">本次会话核销记录 ({{ historyList.length }})</h3>
         <div class="history-list">
           <div v-for="(h, idx) in historyList" :key="idx" class="history-item">
             <span>{{ h.realName }} ({{ h.phone }})</span>
@@ -143,6 +146,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { isImeComposing } from '@/utils/ime'
 import { useUserStore } from '@/stores/user'
 import { useCommunityStore } from '@/stores/community'
 import type { Activity } from '@/types'
@@ -167,6 +171,11 @@ function appendDigit(digit: string) {
   if (verifyCode.value.length < 6) {
     verifyCode.value += digit
   }
+}
+
+function handleVerifyEnter(event: Event) {
+  if (isImeComposing(event)) return
+  handleVerify()
 }
 
 async function handlePasteCode() {
@@ -201,12 +210,22 @@ onMounted(async () => {
   }
 })
 
+function formatActivityOptionLabel(act: Activity) {
+  const statusSuffix = act.status === 4 ? ' [已结束]' : act.status === 5 ? ' [已取消]' : act.status === 1 ? ' [报名中]' : ''
+  return `${act.title} (${act.location})${statusSuffix}`
+}
+
 async function loadActivities() {
   try {
     const res: any = await request.get('/activity/list', {
       params: { size: 50, communityId: communityParam.value }
     })
-    activeActivities.value = res.records || []
+    const list: Activity[] = res.records || []
+    // 进行中/报名中活动排在前面，方便现场工作人员默认选中当前活动
+    activeActivities.value = [...list].sort((a, b) => {
+      const rank = (s?: number) => (s === 3 ? 0 : s === 1 ? 1 : s === 2 ? 2 : 3)
+      return rank(a.status) - rank(b.status)
+    })
     if (activeActivities.value.length > 0 && !selectedActivityId.value) {
       selectedActivityId.value = activeActivities.value[0].id
     }
@@ -308,6 +327,8 @@ async function handleVerify() {
 }
 
 .act-pill {
+  display: inline-flex;
+  align-items: center;
   font-size: 12px;
   padding: 5px 10px;
   border-radius: 999px;
@@ -316,10 +337,14 @@ async function handleVerify() {
   color: #475569;
   cursor: pointer;
   transition: all 0.15s;
-  max-width: 190px;
+  max-width: 280px;
+}
+
+.pill-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .act-pill:hover {
@@ -500,6 +525,26 @@ async function handleVerify() {
 
 .empty-result {
   padding: 40px 0;
+}
+
+.btn-icon-gap {
+  margin-right: 5px;
+}
+
+.pill-status-tag {
+  margin-left: 6px;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  color: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.act-pill.is-ended:not(.active) {
+  color: #64748b;
+  background: #f8fafc;
 }
 
 @media (max-width: 960px) {

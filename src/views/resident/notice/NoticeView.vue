@@ -5,19 +5,24 @@
         <h1 class="cal-display-sm">社区通知与公告中心</h1>
         <p class="page-sub">及时获悉居委会政策宣讲、物业检修与重要民生信息</p>
       </div>
-      <div class="search-input" style="display: flex; gap: 8px; align-items: center">
-        <el-input
-          v-model="keyword"
-          placeholder="检索公告关键词..."
-          clearable
-          style="width: 260px"
-          @keyup.enter="handleSearch"
-          @clear="handleClear"
-        >
-          <template #prefix><el-icon><Search /></el-icon></template>
-        </el-input>
-        <el-button type="primary" class="cal-primary-btn" @click="handleSearch">搜索</el-button>
-      </div>
+      <search aria-label="公告搜索">
+        <form class="search-input" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap" @submit.prevent="handleSearch">
+          <label for="notice-keyword-input" class="visually-hidden">检索公告关键词</label>
+          <el-input
+            id="notice-keyword-input"
+            v-model="keyword"
+            type="search"
+            enterkeyhint="search"
+            placeholder="检索公告关键词..."
+            clearable
+            style="width: 260px; max-width: 100%"
+            @clear="handleClear"
+          >
+            <template #prefix><el-icon aria-hidden="true"><SearchIcon /></el-icon></template>
+          </el-input>
+          <el-button type="primary" native-type="submit" class="cal-primary-btn">搜索</el-button>
+        </form>
+      </search>
     </div>
 
     <!-- 分类标签页 (Cal Tabs) -->
@@ -48,7 +53,11 @@
               {{ getNoticeTypeName(item.noticeType) }}
             </span>
           </div>
-          <h3 class="notice-title">{{ item.title }}</h3>
+          <h3 class="notice-title">
+            <router-link :to="`/notices/${item.id}`" class="notice-title-link" @click.stop>
+              {{ item.title }}
+            </router-link>
+          </h3>
         </div>
         <div class="notice-meta">
           <span class="meta-item"><el-icon><User /></el-icon> {{ item.publisherName }}</span>
@@ -132,7 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Search, User, View } from '@element-plus/icons-vue'
+import { Search as SearchIcon, User, View } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import type { Notice } from '@/types'
@@ -294,9 +303,19 @@ function getNoticeBadgeClass(type: number) {
   font-size: 15px;
   font-weight: 500;
   color: var(--cal-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.notice-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.notice-title-link:hover,
+.notice-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .notice-meta {

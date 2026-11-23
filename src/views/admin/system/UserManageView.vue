@@ -2,7 +2,7 @@
   <div class="user-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">用户中心与权限管理</h2>
+        <h1 class="page-title">用户中心与权限管理</h1>
         <p class="page-sub">管理系统用户角色分配、账号启用与停用及居民信用积分</p>
       </div>
     </div>
@@ -18,55 +18,68 @@
         <el-radio-button value="ROLE_RESIDENT">🏡 社区居民</el-radio-button>
       </el-radio-group>
 
-      <div class="search-actions">
+      <search class="search-actions" aria-label="用户搜索">
+        <label for="user-manage-search" class="visually-hidden">搜索用户名、姓名、手机号</label>
         <el-input
+          id="user-manage-search"
           v-model="searchKeyword"
+          type="search"
+          enterkeyhint="search"
           placeholder="搜索用户名、姓名、手机号..."
-          :prefix-icon="Search"
+          :prefix-icon="SearchIcon"
           clearable
           style="width: 240px"
-          @keyup.enter="loadUsers"
+          @keydown.enter="handleSearchEnter"
           @clear="loadUsers"
         />
-        <el-button type="primary" :icon="Search" @click="loadUsers">查询</el-button>
+        <el-button type="primary" :icon="SearchIcon" @click="loadUsers">查询</el-button>
         <el-button :icon="Refresh" @click="resetFilter">重置</el-button>
-      </div>
+      </search>
     </div>
 
     <!-- 表格卡片 -->
     <div class="table-card card-hover">
+      <div class="table-scroll-region" tabindex="0" role="region" aria-label="用户权限列表">
       <el-table v-loading="loading" :data="userList" style="width: 100%">
-        <el-table-column prop="id" label="UID" width="90" />
-        <el-table-column label="用户头像" width="90">
+        <el-table-column prop="id" label="UID" width="120" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-avatar :size="36" :src="row.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
+            <span class="uid-mono">{{ row.id }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="username" label="登录账号" width="130" />
-        <el-table-column prop="realName" label="真实姓名" width="120" />
-        <el-table-column label="所属社区" width="150">
+        <el-table-column label="账号与姓名" min-width="196">
+          <template #default="{ row }">
+            <div class="user-identity-cell">
+              <el-avatar :size="32" :src="row.avatar || DEFAULT_AVATAR" />
+              <div class="user-identity-text">
+                <div class="user-real">{{ row.realName || row.username }}</div>
+                <div class="user-uname">@{{ row.username }}</div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="所属社区" width="148">
           <template #default="{ row }">
             <el-tag size="small" :type="row.communityId ? 'primary' : 'warning'" effect="plain">
               {{ communityNameOf(row.communityId) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="phone" label="联系电话" width="130" />
-        <el-table-column label="当前角色" width="160">
+        <el-table-column prop="phone" label="联系电话" width="122" />
+        <el-table-column label="当前角色" width="116">
           <template #default="{ row }">
-            <el-tag :type="getRoleTagType(row.role)">
+            <el-tag size="small" :type="getRoleTagType(row.role)">
               {{ getRoleName(row.role) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="社区信用分" width="120">
+        <el-table-column label="信用分" width="82">
           <template #default="{ row }">
             <el-tag size="small" :type="row.creditScore >= 100 ? 'success' : (row.creditScore >= 80 ? 'warning' : 'danger')">
               {{ row.creditScore || 100 }} 分
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="账号状态" width="110">
+        <el-table-column label="状态" width="76">
           <template #default="{ row }">
             <el-switch
               v-model="row.status"
@@ -76,8 +89,12 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="注册时间" width="160" />
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column prop="createTime" label="注册时间" width="142">
+          <template #default="{ row }">
+            <span>{{ (row.createTime || '').slice(0, 16) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="96">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openRoleModal(row)">
               分配角色
@@ -85,6 +102,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -131,11 +149,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { Search, Refresh } from '@element-plus/icons-vue'
+import { Search as SearchIcon, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { DEFAULT_AVATAR } from '@/constants/defaults'
+import { isImeComposing } from '@/utils/ime'
 import { useCommunityStore } from '@/stores/community'
 import type { UserInfo } from '@/types'
+
+function handleSearchEnter(event: Event) {
+  if (isImeComposing(event)) return
+  loadUsers()
+}
 
 const loading = ref(false)
 const userList = ref<UserInfo[]>([])
@@ -382,6 +407,40 @@ function getRoleTagType(role?: string) {
   font-size: 16px;
   font-weight: 800;
   color: #16a34a;
+}
+
+.uid-mono {
+  font-family: monospace;
+  font-size: 12px;
+  color: #475569;
+}
+
+.user-identity-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.user-identity-text {
+  min-width: 0;
+}
+
+.user-real {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-uname {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {

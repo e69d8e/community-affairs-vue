@@ -19,7 +19,8 @@
       <div class="main-info cal-mockup-card">
         <div class="cover-box">
           <img
-            :src="activity.coverImage || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200'"
+            :src="activity.coverImage || DEFAULT_COVER"
+            :alt="activity.title"
             class="cover-img"
           />
           <div class="status-badge-wrap">
@@ -75,7 +76,7 @@
 
           <!-- 活动介绍富文本/正文 -->
           <div class="detail-section">
-            <h3 class="section-title">活动详情介绍与参与须知</h3>
+            <h2 class="section-title">活动详情介绍与参与须知</h2>
             <div class="description-body">
               {{ activity.description }}
             </div>
@@ -87,7 +88,7 @@
       <div class="action-sidebar">
         <!-- 名额进度卡片 -->
         <div class="sidebar-card">
-          <h3 class="card-heading">报名名额进度</h3>
+          <h2 class="card-heading">报名名额进度</h2>
           <div class="quota-stat">
             <span class="quota-big">{{ activity.currentParticipants }}</span>
             <span class="quota-max">/ {{ activity.maxParticipants }} 人</span>
@@ -105,8 +106,17 @@
           <!-- 报名按钮区域 -->
           <div class="action-btn-area">
             <template v-if="!userStore.isLoggedIn">
-              <el-button type="primary" size="large" class="w-full" @click="$router.push('/login')">
+              <el-button
+                v-if="activity.status === 1 && (activity.currentParticipants || 0) < (activity.maxParticipants || 0)"
+                type="primary"
+                size="large"
+                class="w-full signup-btn"
+                @click="$router.push(`/login?redirect=${encodeURIComponent($route.fullPath)}`)"
+              >
                 登录后在线报名
+              </el-button>
+              <el-button v-else type="info" size="large" class="w-full signup-btn" disabled>
+                {{ activity.status === 1 ? '本场活动名额已满' : getStatusText(activity.status) }}
               </el-button>
             </template>
             <template v-else-if="activity.hasSignedUp && activity.mySignupStatus !== 3">
@@ -119,6 +129,7 @@
                 <div v-if="activity.myQrCodeBase64 || activity.myVerifyCode" class="qr-ticket-display">
                   <img
                     :src="activity.myQrCodeBase64 || activity.qrCodeUrl || ''"
+                    alt="活动入场核销二维码"
                     class="ticket-qr-img"
                   />
                   <div class="verify-code-num">
@@ -168,7 +179,7 @@
 
         <!-- 社区温馨提示卡片 -->
         <div class="sidebar-card notice-card">
-          <h4 class="notice-title">💡 参与活动须知</h4>
+          <h2 class="notice-title">💡 参与活动须知</h2>
           <ul class="notice-list">
             <li>活动采取实名预约制，名额有限，请报名的居民准时到场。</li>
             <li>若行程有变无法出席，请在报名截止前取消报名，以便把名额留给邻里。</li>
@@ -192,6 +203,7 @@
         <div class="modal-qr-box">
           <img
             :src="activity?.myQrCodeBase64 || activity?.qrCodeUrl || ''"
+            alt="活动入场核销二维码"
             class="modal-qr-img"
           />
           <div class="modal-code">6位签到核销码：<strong>{{ activity?.myVerifyCode }}</strong></div>
@@ -219,6 +231,7 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
+import { DEFAULT_COVER } from '@/constants/defaults'
 import { useUserStore } from '@/stores/user'
 import type { Activity } from '@/types'
 

@@ -66,7 +66,7 @@ watch(
 .emergency-time {
   text-align: right;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--cal-muted);
 }
 
 /* 移动端 (<=900px): 回顶钮与 AI 悬浮球同列右对齐, 且抬到 AI 球上方, 避免两者重叠 */

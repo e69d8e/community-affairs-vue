@@ -12,7 +12,7 @@
     <div class="chat-wrapper">
       <!-- 关联闲置/求助商品微缩卡片 -->
       <div v-if="post" class="post-preview-card">
-        <img :src="getCover(post.images)" class="preview-img" />
+        <img :src="getCover(post.images)" :alt="post.title" width="52" height="52" class="preview-img" />
         <div class="preview-info">
           <div class="preview-title-row">
             <span class="preview-type-badge">{{ getPostTypeName(post.postType) }}</span>
@@ -74,14 +74,16 @@
 
       <!-- 底部输入区 -->
       <div class="chat-input-area">
+        <label for="market-chat-input" class="visually-hidden">私信内容</label>
         <el-input
+          id="market-chat-input"
           v-model="inputContent"
           type="textarea"
           :rows="2"
           placeholder="请输入私信内容，沟通价格或互助细节 (按 Enter 发送)..."
           maxlength="500"
           resize="none"
-          @keydown.enter.exact.prevent="handleSend"
+          @keydown.enter.exact="handleEnterKey"
         />
         <div class="input-actions-row">
           <span class="input-tip">自觉遵守社区守约，请勿发布不良广告</span>
@@ -104,11 +106,13 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { isImeComposing } from '@/utils/ime'
+import { DEFAULT_AVATAR, DEFAULT_COVER } from '@/constants/defaults'
 import { useUserStore } from '@/stores/user'
 import { stompService } from '@/utils/websocket'
 import type { MarketPost, ChatMessage } from '@/types'
 
-const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+const defaultAvatar = DEFAULT_AVATAR
 
 const props = defineProps<{
   modelValue: boolean
@@ -245,6 +249,12 @@ function subscribeChat() {
   })
 }
 
+function handleEnterKey(e: Event) {
+  if (isImeComposing(e)) return
+  e.preventDefault()
+  handleSend()
+}
+
 async function handleSend() {
   if (!inputContent.value.trim() || !props.post || !chatTargetUser.value) return
   sending.value = true
@@ -276,12 +286,12 @@ function scrollToBottom() {
 }
 
 function getCover(imagesJson?: string) {
-  if (!imagesJson) return 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300'
+  if (!imagesJson) return DEFAULT_COVER
   try {
     const parsed = JSON.parse(imagesJson)
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300'
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : DEFAULT_COVER
   } catch (e) {
-    return 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300'
+    return DEFAULT_COVER
   }
 }
 

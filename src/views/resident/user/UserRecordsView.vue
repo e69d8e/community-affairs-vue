@@ -91,9 +91,11 @@
                   </span>
                 </div>
 
-                <h3 class="pass-title" @click="$router.push(`/activities/${ticket.id}?from=records`)">
-                  {{ getTicketTitle(ticket) }}
-                </h3>
+                <h2 class="pass-title">
+                  <router-link :to="`/activities/${ticket.id}?from=records`" class="pass-title-link" @click.stop>
+                    {{ getTicketTitle(ticket) }}
+                  </router-link>
+                </h2>
 
                 <div class="pass-detail-list">
                   <div class="detail-row">
@@ -135,16 +137,16 @@
 
               <!-- 凭证右侧：核销动态码与二维码 -->
               <div class="pass-qr-section">
-                <div class="qr-click-area" @click="openQrZoom(ticket)" title="点击放大核销二维码">
-                  <div class="qr-card-box">
+                <button type="button" class="qr-click-area" aria-label="点击放大核销二维码" @click="openQrZoom(ticket)">
+                  <span class="qr-card-box">
                     <img
                       :src="getQrCodeUrl(ticket)"
                       class="qr-image"
                       alt="活动核销二维码"
                     />
-                  </div>
+                  </span>
                   <span class="qr-zoom-pill">🔍 点击放大二维码</span>
-                </div>
+                </button>
 
                 <div class="verify-code-box">
                   <span class="code-title">动态核销码</span>
@@ -203,7 +205,7 @@
               @click="$router.push(`/market/${post.id}?from=records`)"
             >
               <div class="post-card-thumb">
-                <img :src="getFirstImage(post.images)" class="thumb-img" />
+                <img :src="getFirstImage(post.images)" :alt="post.title" loading="lazy" class="thumb-img" />
                 <span :class="['type-badge', `type-${post.postType}`]">
                   {{ getPostTypeName(post.postType) }}
                 </span>
@@ -219,7 +221,11 @@
                   <span class="trade-type-pill">{{ getTradeTypeText(post.tradeType) }}</span>
                 </div>
 
-                <h4 class="post-title">{{ post.title }}</h4>
+                <h2 class="post-title">
+                  <router-link :to="`/market/${post.id}?from=records`" class="post-title-link" @click.stop>
+                    {{ post.title }}
+                  </router-link>
+                </h2>
                 <p class="post-desc">{{ post.description }}</p>
 
                 <div v-if="post.tradeAddress" class="post-address">
@@ -249,7 +255,7 @@
         <p class="zoom-loc">📍 {{ selectedTicket.location }}</p>
 
         <div class="zoom-qr-box">
-          <img :src="getQrCodeUrl(selectedTicket)" class="zoom-qr-img" />
+          <img :src="getQrCodeUrl(selectedTicket)" alt="活动入场核销二维码" class="zoom-qr-img" />
           <div class="zoom-code-number">
             <span>6位核销码：</span>
             <strong>{{ getVerifyCode(selectedTicket) }}</strong>
@@ -271,6 +277,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { Plus, Refresh, Calendar, Ticket, Goods, ArrowLeft } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
+import { DEFAULT_COVER } from '@/constants/defaults'
 import type { MarketPost } from '@/types'
 
 const router = useRouter()
@@ -393,14 +400,14 @@ async function loadMarketPosts() {
 }
 
 function getFirstImage(imagesJson?: string): string {
-  if (!imagesJson) return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  if (!imagesJson) return DEFAULT_COVER
   try {
     const arr = JSON.parse(imagesJson)
     if (Array.isArray(arr) && arr.length > 0) {
       return arr[0]
     }
   } catch (e) {}
-  return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  return DEFAULT_COVER
 }
 
 function getPostTypeName(type: number): string {
@@ -583,11 +590,17 @@ onMounted(() => {
   font-weight: 700;
   color: var(--cal-ink);
   margin-bottom: 14px;
-  cursor: pointer;
   line-height: 1.35;
 }
-.pass-title:hover {
+.pass-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.pass-title-link:hover,
+.pass-title-link:focus-visible {
   color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .pass-detail-list {
@@ -689,6 +702,10 @@ onMounted(() => {
 }
 
 .qr-click-area {
+  border: none;
+  padding: 0;
+  background: transparent;
+  font: inherit;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -701,6 +718,7 @@ onMounted(() => {
 }
 
 .qr-card-box {
+  display: block;
   width: 124px;
   height: 124px;
   padding: 6px;
@@ -869,9 +887,18 @@ onMounted(() => {
   font-weight: 700;
   color: var(--cal-ink);
   margin-bottom: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.post-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.post-title-link:hover,
+.post-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .post-desc {

@@ -21,6 +21,7 @@
       </div>
     </header>
 
+    <main class="cockpit-main">
     <!-- 顶部 4 大核心 KPI 动态指标卡 -->
     <div class="kpi-row">
       <div class="kpi-card">
@@ -128,6 +129,7 @@
         </div>
       </div>
     </div>
+    </main>
   </div>
 </template>
 
@@ -196,10 +198,37 @@ const defaultEvents = [
   { eventType: 'MARKET', tag: '邻里互助', title: '4号楼业主发布【求借电钻2小时】邻里已极速响应', time: '13:12:45' }
 ]
 
+function startClockTimer() {
+  if (timerId !== null || document.hidden) return
+  timerId = window.setInterval(updateClock, 1000)
+}
+
+function stopClockTimer() {
+  if (timerId !== null) {
+    clearInterval(timerId)
+    timerId = null
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopClockTimer()
+  } else {
+    updateClock()
+    startClockTimer()
+  }
+}
+
+function handleFullscreenChange() {
+  isFullScreen.value = !!document.fullscreenElement
+}
+
 onMounted(async () => {
   updateClock()
-  timerId = setInterval(updateClock, 1000)
+  startClockTimer()
 
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
   window.addEventListener('resize', handleResize)
 
   await loadScreenData()
@@ -209,7 +238,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (timerId) clearInterval(timerId)
+  stopClockTimer()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
   window.removeEventListener('resize', handleResize)
   categoryChart?.dispose()
   heatmapChart?.dispose()
@@ -225,13 +256,9 @@ function updateClock() {
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen()
-    isFullScreen.value = true
+    document.documentElement.requestFullscreen?.()
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen()
-      isFullScreen.value = false
-    }
+    document.exitFullscreen?.()
   }
 }
 
@@ -325,6 +352,7 @@ function initHeatmapChart() {
     },
     yAxis: {
       type: 'value',
+      minInterval: 1,
       splitLine: { lineStyle: { color: '#1e293b' } },
       axisLabel: { color: '#64748b' }
     },
@@ -428,23 +456,36 @@ function initFunnelChart() {
   })
 }
 
+const postTypeLabelMap: Record<string, string> = {
+  '1': '二手闲置',
+  '2': '邻里求助',
+  '3': '物品借用',
+  '4': '邻里拼车',
+  '5': '技能交换'
+}
+
 function initMarketChart() {
   if (!marketChartRef.value) return
   marketChart = echarts.init(marketChartRef.value)
 
-  const rawData = screenData.value?.marketPostStats || [
+  const rawSource = screenData.value?.marketPostStats || [
     { name: '二手闲置', value: 45 },
     { name: '邻里求助', value: 28 },
     { name: '物品借用', value: 20 },
-    { name: '绿色拼车', value: 12 },
+    { name: '邻里拼车', value: 12 },
     { name: '技能交换', value: 18 }
   ]
+  const rawData = rawSource.map((d: any) => ({
+    ...d,
+    name: postTypeLabelMap[String(d.name)] || d.name
+  }))
 
   marketChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     grid: { top: '10%', left: '8%', right: '8%', bottom: '10%', containLabel: true },
     xAxis: {
       type: 'value',
+      minInterval: 1,
       splitLine: { lineStyle: { color: '#1e293b' } },
       axisLabel: { color: '#64748b' }
     },
@@ -474,7 +515,9 @@ function initMarketChart() {
 
 <style scoped>
 .command-screen-container {
+  color-scheme: dark;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--cal-surface-dark);
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
@@ -484,8 +527,14 @@ function initMarketChart() {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow-x: hidden;
   box-sizing: border-box;
+}
+.cockpit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
 .screen-header {
@@ -630,7 +679,7 @@ function initMarketChart() {
 
 .kpi-sub {
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .cockpit-grid {
@@ -710,7 +759,7 @@ function initMarketChart() {
 
 .sandtable-addr {
   font-size: 12px;
-  color: #64748b;
+  color: #94a3b8;
   margin-bottom: 12px;
 }
 
@@ -726,7 +775,12 @@ function initMarketChart() {
   background: #10b981;
   margin-left: auto;
   box-shadow: 0 0 8px #10b981;
-  animation: pulse 1.5s infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-dot {
+    animation: pulse 1.5s infinite;
+  }
 }
 
 @keyframes pulse {
@@ -745,6 +799,32 @@ function initMarketChart() {
   gap: 10px;
   overflow-y: auto;
   max-height: 210px;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+@supports not (scrollbar-color: auto) {
+  .event-stream-list {
+    scrollbar-width: auto;
+  }
+
+  .event-stream-list::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .event-stream-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .event-stream-list::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+  }
+
+  .event-stream-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+  }
 }
 
 .event-stream-item {
@@ -760,7 +840,7 @@ function initMarketChart() {
 }
 
 .ev-time {
-  color: #64748b;
+  color: #94a3b8;
   font-family: monospace;
   flex-shrink: 0;
 }
@@ -774,7 +854,7 @@ function initMarketChart() {
 }
 
 .tag-order { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-.tag-notice { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.tag-notice { background: rgba(239, 68, 68, 0.22); color: #f87171; }
 .tag-signup { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .tag-report { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
 .tag-market { background: rgba(168, 85, 247, 0.2); color: #c084fc; }

@@ -43,7 +43,7 @@
         @click="$router.push(`/market/${post.id}?from=profile`)"
       >
         <div class="post-card-thumb">
-          <img :src="getFirstImage(post.images)" class="thumb-img" />
+          <img :src="getFirstImage(post.images)" :alt="post.title" loading="lazy" class="thumb-img" />
           <span :class="['type-badge', `type-${post.postType}`]">
             {{ getPostTypeName(post.postType) }}
           </span>
@@ -59,7 +59,11 @@
             <span class="trade-type-pill">{{ getTradeTypeText(post.tradeType) }}</span>
           </div>
 
-          <h4 class="post-title">{{ post.title }}</h4>
+          <h4 class="post-title">
+            <router-link :to="`/market/${post.id}?from=profile`" class="post-title-link" @click.stop>
+              {{ post.title }}
+            </router-link>
+          </h4>
           <p class="post-desc">{{ post.description }}</p>
 
           <div class="post-meta-row">
@@ -214,14 +218,14 @@
           <div class="upload-photo-row">
             <div v-for="(url, idx) in uploadedImages" :key="url" class="photo-item">
               <el-image :src="url" :preview-src-list="uploadedImages" :initial-index="idx" preview-teleported fit="cover" class="img-box" />
-              <button type="button" class="del-btn" @click="uploadedImages.splice(idx, 1)">
-                <el-icon><Close /></el-icon>
+              <button type="button" class="del-btn" aria-label="移除该照片" @click="uploadedImages.splice(idx, 1)">
+                <el-icon aria-hidden="true"><Close /></el-icon>
               </button>
             </div>
-            <div v-if="uploadedImages.length < 5" class="add-photo-trigger" @click="showCropper = true">
-              <el-icon :size="18"><Plus /></el-icon>
+            <button v-if="uploadedImages.length < 5" type="button" class="add-photo-trigger" @click="showCropper = true">
+              <el-icon :size="18" aria-hidden="true"><Plus /></el-icon>
               <span>添加照片 ({{ uploadedImages.length }}/5)</span>
-            </div>
+            </button>
           </div>
         </el-form-item>
       </el-form>
@@ -250,6 +254,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Refresh, Close } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import { DEFAULT_COVER } from '@/constants/defaults'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
 import type { MarketPost } from '@/types'
 
@@ -356,12 +361,12 @@ function formatShortDate(str?: string) {
 }
 
 function getFirstImage(imagesJson?: string): string {
-  if (!imagesJson) return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  if (!imagesJson) return DEFAULT_COVER
   try {
     const arr = JSON.parse(imagesJson)
     if (Array.isArray(arr) && arr.length > 0) return arr[0]
   } catch (e) {}
-  return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  return DEFAULT_COVER
 }
 
 function getPostTypeName(type: number): string {
@@ -569,6 +574,16 @@ defineExpose({
   color: var(--cal-ink);
   margin-bottom: 4px;
 }
+.post-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.post-title-link:hover,
+.post-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 .post-desc {
   font-size: 12px;
@@ -634,11 +649,11 @@ defineExpose({
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -646,9 +661,17 @@ defineExpose({
   justify-content: center;
   font-size: 11px;
 }
+@media (pointer: coarse) {
+  .del-btn::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+}
 
 .add-photo-trigger {
   height: 72px;
+  font: inherit;
   padding: 0 16px;
   border: 1px dashed var(--cal-hairline);
   border-radius: 8px;

@@ -19,26 +19,32 @@
 
       <div class="greeting-right">
         <!-- 全局快捷检索胶囊框 (可呼出 OmniSearch ⌘K) -->
-        <div class="omni-search-box" @click="handleOpenSearch" title="点击呼出全站聚合检索 (⌘K)">
-          <el-icon class="search-icon"><Search /></el-icon>
+        <button
+          type="button"
+          class="omni-search-box"
+          title="点击呼出全站聚合检索 (⌘K)"
+          aria-label="全站聚合检索，快捷键 Command 加 K"
+          @click="handleOpenSearch"
+        >
+          <el-icon class="search-icon" aria-hidden="true"><Search /></el-icon>
           <span class="search-placeholder">检索公告、活动、互助...</span>
-          <span class="search-shortcut">⌘K</span>
-        </div>
+          <span class="search-shortcut" aria-hidden="true">⌘K</span>
+        </button>
 
         <!-- 紧急/置顶通告广播胶囊条 -->
-        <div
+        <router-link
           v-if="topNotice"
+          :to="`/notices/${topNotice.id}`"
           class="top-notice-pill"
-          @click="$router.push(`/notices/${topNotice.id}`)"
           :title="topNotice.title"
         >
           <div class="notice-pill-tag" :class="topNotice.noticeType === 4 ? 'tag-emergency' : 'tag-top'">
-            <el-icon><Bell /></el-icon>
+            <el-icon aria-hidden="true"><Bell /></el-icon>
             <span>{{ topNotice.noticeType === 4 ? '突发应急' : '重要通报' }}</span>
           </div>
           <span class="notice-pill-title">{{ topNotice.title }}</span>
-          <el-icon class="notice-pill-arrow"><ArrowRight /></el-icon>
-        </div>
+          <el-icon class="notice-pill-arrow" aria-hidden="true"><ArrowRight /></el-icon>
+        </router-link>
       </div>
     </section>
 
@@ -50,7 +56,7 @@
       <div class="service-tiles-wrapper">
         <div class="hub-header">
           <div class="hub-title-row">
-            <span class="hub-indicator"></span>
+            <span class="hub-indicator" aria-hidden="true"></span>
             <h2 class="hub-title">高频便民服务直达</h2>
           </div>
           <span class="hub-hint">常用事务 · 一键申报</span>
@@ -58,8 +64,8 @@
 
         <div class="service-tiles-grid">
           <!-- 1. 房屋设施报修 -->
-          <div class="service-tile tile-repair" @click="$router.push('/orders/submit?type=1')">
-            <div class="tile-icon-wrap icon-blue">🛠️</div>
+          <router-link to="/orders/submit?type=1" class="service-tile tile-repair">
+            <div class="tile-icon-wrap icon-blue" aria-hidden="true">🛠️</div>
             <div class="tile-content">
               <div class="tile-title-row">
                 <h3 class="tile-title">房屋设施报修</h3>
@@ -67,11 +73,11 @@
               </div>
               <p class="tile-desc">水电照明 / 管道门窗故障极速申报</p>
             </div>
-          </div>
+          </router-link>
 
           <!-- 2. 物业投诉建议 -->
-          <div class="service-tile tile-complaint" @click="$router.push('/orders/submit?type=2')">
-            <div class="tile-icon-wrap icon-amber">📝</div>
+          <router-link to="/orders/submit?type=2" class="service-tile tile-complaint">
+            <div class="tile-icon-wrap icon-amber" aria-hidden="true">📝</div>
             <div class="tile-content">
               <div class="tile-title-row">
                 <h3 class="tile-title">物业投诉建议</h3>
@@ -79,11 +85,11 @@
               </div>
               <p class="tile-desc">噪音违停 / 物业服务诉求直达专干</p>
             </div>
-          </div>
+          </router-link>
 
           <!-- 3. 文体公益活动 -->
-          <div class="service-tile tile-activity" @click="$router.push('/activities')">
-            <div class="tile-icon-wrap icon-emerald">🎪</div>
+          <router-link to="/activities" class="service-tile tile-activity">
+            <div class="tile-icon-wrap icon-emerald" aria-hidden="true">🎪</div>
             <div class="tile-content">
               <div class="tile-title-row">
                 <h3 class="tile-title">文体公益活动</h3>
@@ -91,11 +97,11 @@
               </div>
               <p class="tile-desc">邻里文体 / 亲子公益预约与核销</p>
             </div>
-          </div>
+          </router-link>
 
           <!-- 4. 邻里二手互助 -->
-          <div class="service-tile tile-market" @click="$router.push('/market')">
-            <div class="tile-icon-wrap icon-purple">🤝</div>
+          <router-link to="/market" class="service-tile tile-market">
+            <div class="tile-icon-wrap icon-purple" aria-hidden="true">🤝</div>
             <div class="tile-content">
               <div class="tile-title-row">
                 <h3 class="tile-title">邻里闲置互助</h3>
@@ -103,11 +109,11 @@
               </div>
               <p class="tile-desc">闲置转让 / 工具借用 / 技能交换</p>
             </div>
-          </div>
+          </router-link>
 
           <!-- 5. 房屋认证绑定 -->
-          <div class="service-tile tile-house" @click="$router.push('/user/profile?tab=houses')">
-            <div class="tile-icon-wrap icon-teal">🏠</div>
+          <router-link to="/user/profile?tab=houses" class="service-tile tile-house">
+            <div class="tile-icon-wrap icon-teal" aria-hidden="true">🏠</div>
             <div class="tile-content">
               <div class="tile-title-row">
                 <h3 class="tile-title">房屋实名认证</h3>
@@ -115,7 +121,7 @@
               </div>
               <p class="tile-desc">房产绑定 / 网格空间认领与权益确认</p>
             </div>
-          </div>
+          </router-link>
         </div>
       </div>
 
@@ -123,7 +129,7 @@
       <div class="resident-widget-wrapper">
         <div class="hub-header">
           <div class="hub-title-row">
-            <span class="hub-indicator"></span>
+            <span class="hub-indicator" aria-hidden="true"></span>
             <h2 class="hub-title">居民事务速览</h2>
           </div>
           <span class="hub-hint">进度追踪 · 凭证直达</span>
@@ -132,8 +138,8 @@
         <div class="widget-card cal-mockup-card">
           <!-- 已登录居民态 -->
           <template v-if="userStore.isLoggedIn">
-            <div class="widget-user-header" style="cursor: pointer" title="点击进入个人中心" @click="$router.push('/user/profile')">
-              <el-avatar :size="44" :src="userStore.user?.avatar" class="widget-avatar" />
+            <router-link to="/user/profile" class="widget-user-header" title="点击进入个人中心">
+              <el-avatar :size="44" :src="userStore.user?.avatar || DEFAULT_AVATAR" class="widget-avatar" />
               <div class="widget-user-meta">
                 <div class="user-name-line">
                   <span class="user-name">{{ userDisplayName }}</span>
@@ -141,15 +147,15 @@
                 </div>
                 <div class="user-sub-line">
                   <span class="credit-pill">
-                    <el-icon><Medal /></el-icon>
+                    <el-icon aria-hidden="true"><Medal /></el-icon>
                     AAA级 · {{ userStore.user?.creditScore || 100 }}分
                   </span>
-                  <span class="house-pill" @click.stop="$router.push('/user/profile')">
+                  <span class="house-pill">
                     {{ userStore.user?.phone ? userStore.user?.phone : '个人档案' }}
                   </span>
                 </div>
               </div>
-            </div>
+            </router-link>
 
             <!-- 进行中工单状态看板 -->
             <div class="widget-status-block">
@@ -162,7 +168,6 @@
                 v-if="activeWorkOrder"
                 class="active-order-card"
                 @click="$router.push(`/orders/${activeWorkOrder.id}`)"
-                title="点击查看此工单处置全链路详情"
               >
                 <div class="order-main-info">
                   <span class="order-tag" :class="getOrderStatusClass(activeWorkOrder.status)">
@@ -170,7 +175,9 @@
                   </span>
                   <span class="order-no">#{{ activeWorkOrder.orderNo }}</span>
                 </div>
-                <div class="order-title-text">{{ activeWorkOrder.title }}</div>
+                <router-link :to="`/orders/${activeWorkOrder.id}`" class="order-title-text" @click.stop>
+                  {{ activeWorkOrder.title }}
+                </router-link>
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px">
                   <span class="order-time-text">申报于 {{ formatTime(activeWorkOrder.createTime) }}</span>
                   <el-button
@@ -178,7 +185,7 @@
                     size="small"
                     type="warning"
                     plain
-                    style="height: 24px; padding: 0 8px; font-size: 11px"
+                    class="quick-rate-btn"
                     @click.stop="openQuickRateModal(activeWorkOrder)"
                   >
                     ★ 立即评价
@@ -187,7 +194,7 @@
               </div>
 
               <div v-else class="empty-status-box">
-                <span class="empty-icon">✨</span>
+                <span class="empty-icon" aria-hidden="true">✨</span>
                 <span class="empty-text">当前无进行中工单，设施一切正常</span>
                 <button type="button" class="quick-submit-link" @click="$router.push('/orders/submit?type=1')">
                   + 申报新工单
@@ -197,24 +204,25 @@
 
             <!-- 凭证与统计快捷条 -->
             <div class="widget-quick-stats">
-              <div
+              <button
+                type="button"
                 class="stat-item"
                 :title="unverifiedTicketsCount > 0 ? '点击直接出示活动核销码' : '查看我的活动凭证'"
                 @click="unverifiedTicketsCount > 0 ? (showTicketsModal = true) : $router.push('/user/profile?tab=tickets')"
               >
                 <span class="stat-num">{{ unverifiedTicketsCount }}</span>
                 <span class="stat-desc">{{ unverifiedTicketsCount > 0 ? '待验券(亮码)' : '活动入场券' }}</span>
-              </div>
-              <div class="stat-divider"></div>
-              <div class="stat-item" @click="$router.push('/user/profile?tab=orders')">
+              </button>
+              <div class="stat-divider" aria-hidden="true"></div>
+              <button type="button" class="stat-item" @click="$router.push('/user/profile?tab=orders')">
                 <span class="stat-num">{{ myOrdersTotal }}</span>
                 <span class="stat-desc">累计工单</span>
-              </div>
-              <div class="stat-divider"></div>
-              <div class="stat-item" @click="$router.push('/user/profile')">
+              </button>
+              <div class="stat-divider" aria-hidden="true"></div>
+              <button type="button" class="stat-item" @click="$router.push('/user/profile')">
                 <span class="stat-num">个人</span>
                 <span class="stat-desc">工作台与房产</span>
-              </div>
+              </button>
             </div>
           </template>
 
@@ -271,7 +279,11 @@
               <span class="cal-badge" :class="getNoticeBadgeClass(item.noticeType)">
                 {{ getNoticeTypeName(item.noticeType) }}
               </span>
-              <h4 class="notice-title">{{ item.title }}</h4>
+              <h3 class="notice-title">
+                <button type="button" class="notice-title-btn" @click.stop="openQuickNotice(item)">
+                  {{ item.title }}
+                </button>
+              </h3>
             </div>
             <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
               <span class="notice-date">{{ formatTime(item.publishTime) }}</span>
@@ -303,6 +315,7 @@
               type="button"
               class="segment-btn"
               :class="{ active: activeLifeTab === 'activities' }"
+              :aria-pressed="activeLifeTab === 'activities'"
               @click="activeLifeTab = 'activities'"
             >
               🎉 近期文体活动 ({{ activityList.length }})
@@ -311,6 +324,7 @@
               type="button"
               class="segment-btn"
               :class="{ active: activeLifeTab === 'market' }"
+              :aria-pressed="activeLifeTab === 'market'"
               @click="activeLifeTab = 'market'"
             >
               🤝 邻里闲置互助 ({{ postList.length }})
@@ -318,7 +332,7 @@
           </div>
 
           <router-link :to="activeLifeTab === 'activities' ? '/activities' : '/market'" class="more-link">
-            {{ activeLifeTab === 'activities' ? '全量活动' : '逛逛集市' }} <el-icon><ArrowRight /></el-icon>
+            {{ activeLifeTab === 'activities' ? '全量活动' : '逛逛集市' }} <el-icon aria-hidden="true"><ArrowRight /></el-icon>
           </router-link>
         </div>
 
@@ -332,16 +346,23 @@
               @click="$router.push(`/activities/${act.id}`)"
             >
               <img
-                :src="act.coverImage || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800'"
+                :src="act.coverImage || DEFAULT_COVER"
+                width="90"
+                height="70"
+                loading="lazy"
                 class="act-mini-cover"
-                alt="activity cover"
+                :alt="act.title"
               />
               <div class="act-mini-body">
                 <div class="act-tag-row">
                   <span class="cal-badge cal-badge-emerald">{{ act.category || '社区活动' }}</span>
                   <span class="act-quota">名额：{{ act.currentParticipants || 0 }} / {{ act.maxParticipants || 50 }}</span>
                 </div>
-                <h4 class="act-mini-title">{{ act.title }}</h4>
+                <h3 class="act-mini-title">
+                  <router-link :to="`/activities/${act.id}`" class="card-title-link" @click.stop>
+                    {{ act.title }}
+                  </router-link>
+                </h3>
                 <p class="act-mini-loc">📍 {{ act.location }}</p>
                 <div class="act-mini-footer">
                   <span class="act-date">{{ formatTime(act.startTime) }}</span>
@@ -349,7 +370,7 @@
                     v-if="act.hasSignedUp"
                     type="button"
                     class="act-join-btn"
-                    style="background: #10b981; color: #fff"
+                    style="background: #047857; color: #fff"
                     @click.stop="showTicketsModal = true"
                   >
                     🎫 已报名(亮码)
@@ -368,7 +389,16 @@
 
             <div v-if="portalLoading" class="empty-list-hint">正在加载近期活动…</div>
             <div v-else-if="activityList.length === 0" class="empty-list-hint">
-              近期暂无正在报名的文体活动
+              <span>近期暂无正在报名的文体活动</span>
+              <el-button
+                v-if="postList.length > 0"
+                link
+                type="primary"
+                style="margin-left: 8px"
+                @click="activeLifeTab = 'market'"
+              >
+                看看邻里闲置互助 →
+              </el-button>
             </div>
           </div>
 
@@ -381,11 +411,15 @@
               @click="$router.push(`/market/${post.id}`)"
             >
               <div class="market-thumb-wrap">
-                <img :src="getCover(post.images)" class="market-thumb" alt="post cover" />
+                <img :src="getCover(post.images)" loading="lazy" class="market-thumb" :alt="post.title" />
                 <span class="market-type-pill">{{ getPostTypeName(post.postType) }}</span>
               </div>
               <div class="market-mini-body">
-                <h4 class="market-mini-title">{{ post.title }}</h4>
+                <h3 class="market-mini-title">
+                  <router-link :to="`/market/${post.id}`" class="card-title-link" @click.stop>
+                    {{ post.title }}
+                  </router-link>
+                </h3>
                 <div class="market-price-line">
                   <span class="price-text">{{ post.price > 0 ? '¥' + post.price : '免费 / 借用' }}</span>
                   <span class="delivery-text">{{ post.deliveryType === 1 ? '楼下自提' : '上门送达' }}</span>
@@ -443,7 +477,7 @@
           <p style="font-size: 13px; color: #475569; margin: 2px 0">📍 地点：{{ signingTargetAct.location }}</p>
           <p style="font-size: 13px; color: #475569; margin: 2px 0">⏰ 时间：{{ signingTargetAct.startTime }}</p>
         </div>
-        <p style="font-size: 12px; color: #059669; background: #ecfdf5; padding: 10px 12px; border-radius: 8px; margin: 0">
+        <p style="font-size: 12px; color: #047857; background: #ecfdf5; padding: 10px 12px; border-radius: 8px; margin: 0">
           💡 确认报名后将即刻生成 6 位防伪签到码与二维码凭证，活动现场直接出示即可。
         </p>
       </div>
@@ -474,6 +508,9 @@
           </div>
           <img
             :src="t.myQrCodeBase64 || t.qrCodeUrl || ''"
+            width="140"
+            height="140"
+            alt="活动入场核销二维码"
             style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; padding: 6px"
           />
           <div style="margin-top: 8px; font-size: 13px; color: #475569">
@@ -522,6 +559,7 @@ import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { localQrDataUrl } from '@/utils/qrcode'
 import { isDev } from '@/utils/env'
+import { DEFAULT_AVATAR, DEFAULT_COVER } from '@/constants/defaults'
 import { useUserStore } from '@/stores/user'
 import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import type { Notice, Activity, MarketPost, WorkOrder } from '@/types'
@@ -591,6 +629,9 @@ onMounted(async () => {
   // 游客模式下先解析默认展示社区, 再并行加载三个公开列表, 避免空 communityId 请求
   await initGuestCommunity()
   await Promise.all([loadNotices(), loadActivities(), loadMarketPosts()])
+  if (activityList.value.length === 0 && postList.value.length > 0) {
+    activeLifeTab.value = 'market'
+  }
   portalLoading.value = false
   loadUserAffairs()
 })
@@ -820,12 +861,12 @@ function getOrderStatusClass(status: number) {
 }
 
 function getCover(imagesJson?: string) {
-  if (!imagesJson) return 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=600'
+  if (!imagesJson) return DEFAULT_COVER
   try {
     const arr = JSON.parse(imagesJson)
-    return arr[0] || 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=600'
+    return arr[0] || DEFAULT_COVER
   } catch (e) {
-    return 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=600'
+    return DEFAULT_COVER
   }
 }
 </script>
@@ -858,15 +899,16 @@ function getCover(imagesJson?: string) {
 .greeting-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
   font-weight: 500;
   color: var(--cal-muted);
 }
 
 .badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
   border-radius: var(--radius-full);
   background-color: var(--cal-success);
 }
@@ -883,7 +925,7 @@ function getCover(imagesJson?: string) {
 .greeting-subtitle {
   font-size: 13px;
   color: var(--cal-muted);
-  max-width: 580px;
+  max-width: 680px;
   line-height: 1.5;
 }
 
@@ -899,13 +941,15 @@ function getCover(imagesJson?: string) {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 38px;
-  padding: 0 14px;
+  min-height: 38px;
+  padding: 6px 14px;
+  font-family: inherit;
+  text-align: left;
   background: var(--cal-surface-soft);
   border: 1px solid var(--cal-hairline);
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   width: 280px;
 }
 
@@ -967,12 +1011,12 @@ function getCover(imagesJson?: string) {
 
 .tag-emergency {
   background: #fee2e2;
-  color: #dc2626;
+  color: #b91c1c;
 }
 
 .tag-top {
   background: #fef3c7;
-  color: #d97706;
+  color: #b45309;
 }
 
 .notice-pill-title {
@@ -1057,17 +1101,23 @@ function getCover(imagesJson?: string) {
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
   background: var(--cal-canvas);
   border: 1px solid var(--cal-hairline);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .service-tile:hover {
-  transform: translateY(-2px);
   border-color: #cbd5e1;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .service-tile:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .tile-icon-wrap {
@@ -1115,13 +1165,13 @@ function getCover(imagesJson?: string) {
   flex-shrink: 0;
 }
 
-.badge-blue { background: #e0f2fe; color: #0284c7; }
-.badge-amber { background: #fef3c7; color: #d97706; }
-.badge-emerald { background: #d1fae5; color: #059669; }
-.badge-purple { background: #ede9fe; color: #7c3aed; }
-.badge-teal { background: #ccfbf1; color: #0d9488; }
-.badge-red { background: #fee2e2; color: #ef4444; }
-.badge-gray { background: #f3f4f6; color: #6b7280; }
+.badge-blue { background: #e0f2fe; color: #0369a1; }
+.badge-amber { background: #fef3c7; color: #b45309; }
+.badge-emerald { background: #d1fae5; color: #047857; }
+.badge-purple { background: #ede9fe; color: #6d28d9; }
+.badge-teal { background: #ccfbf1; color: #0f766e; }
+.badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-gray { background: #f3f4f6; color: #4b5563; }
 
 .tile-desc {
   font-size: 12px;
@@ -1157,6 +1207,8 @@ function getCover(imagesJson?: string) {
   align-items: center;
   gap: 12px;
   padding-bottom: 14px;
+  text-decoration: none;
+  color: inherit;
   border-bottom: 1px solid var(--cal-hairline-soft);
 }
 
@@ -1200,15 +1252,12 @@ function getCover(imagesJson?: string) {
   gap: 3px;
   font-size: 11px;
   font-weight: 500;
-  color: #10b981;
+  color: #047857;
 }
 
 .house-pill {
   font-size: 11px;
   color: var(--cal-muted);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* 状态展示块 */
@@ -1280,13 +1329,24 @@ function getCover(imagesJson?: string) {
 }
 
 .order-title-text {
+  display: block;
   font-size: 13px;
   font-weight: 600;
   color: var(--cal-ink);
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 2px;
+}
+.order-title-text:hover {
+  text-decoration: underline;
+}
+
+.quick-rate-btn {
+  min-height: 28px;
+  padding: 2px 10px;
+  font-size: 11px;
 }
 
 .order-time-text {
@@ -1336,14 +1396,17 @@ function getCover(imagesJson?: string) {
 }
 
 .stat-item {
+  border: none;
+  background: transparent;
+  font-family: inherit;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 6px 10px;
   border-radius: var(--radius-md);
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .stat-item:hover {
@@ -1557,6 +1620,31 @@ function getCover(imagesJson?: string) {
   min-width: 0;
 }
 
+.notice-title-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notice-title-btn:hover {
+  text-decoration: underline;
+}
+
+.card-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.card-title-link:hover {
+  text-decoration: underline;
+}
+
 .notice-date {
   font-size: 12px;
   color: var(--cal-muted);
@@ -1575,7 +1663,7 @@ function getCover(imagesJson?: string) {
 }
 
 .segment-btn {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   padding: 5px 10px;
   font-size: 12px;
@@ -1583,7 +1671,7 @@ function getCover(imagesJson?: string) {
   color: var(--cal-muted);
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
@@ -1591,7 +1679,14 @@ function getCover(imagesJson?: string) {
   background: #ffffff;
   color: var(--cal-ink);
   font-weight: 600;
+  border-color: var(--cal-hairline);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media (forced-colors: active) {
+  .segment-btn.active {
+    border: 2px solid Highlight;
+  }
 }
 
 .life-tab-content {
@@ -1766,7 +1861,7 @@ function getCover(imagesJson?: string) {
 .price-text {
   font-size: 12px;
   font-weight: 700;
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .delivery-text {

@@ -1,19 +1,20 @@
 <template>
   <div class="ai-assistant-wrapper">
     <!-- 右下角全局悬浮智能球 -->
-    <div
+    <button
       v-if="!drawerVisible"
+      type="button"
       class="ai-floating-ball"
       :class="{ 'has-pulse': !hasOpened }"
-      title="点击唤起 AI 社区百事通助手"
+      aria-label="唤起 AI 社区百事通助手"
       @click="openDrawer"
     >
       <div class="ball-inner">
-        <span class="ai-icon">🤖</span>
+        <span class="ai-icon" aria-hidden="true">🤖</span>
         <span class="ball-label desktop-only">AI 百事通</span>
       </div>
-      <div v-if="!hasOpened" class="ai-badge-ping"></div>
-    </div>
+      <div v-if="!hasOpened" class="ai-badge-ping" aria-hidden="true"></div>
+    </button>
 
     <!-- 侧边对话抽屉 -->
     <el-drawer
@@ -22,7 +23,7 @@
       size="440px"
       :with-header="false"
       class="ai-chat-drawer"
-      :lock-scroll="true"
+      :lock-scroll="false"
       :append-to-body="true"
       destroy-on-close
     >
@@ -30,23 +31,23 @@
         <!-- 抽屉头部 (彻底拦截非滚动区滚轮事件，防背景穿透) -->
         <div class="drawer-header" @wheel.prevent.stop>
           <div class="header-left">
-            <div class="bot-avatar">🤖</div>
+            <div class="bot-avatar" aria-hidden="true">🤖</div>
             <div class="bot-info">
               <div class="bot-title">
                 AI 社区百事通
-                <span class="online-tag"><i class="dot"></i> 知识库就绪</span>
+                <span class="online-tag"><i class="dot" aria-hidden="true"></i> 知识库就绪</span>
               </div>
               <div class="bot-subtitle">7×24h 政策指引 · 报修辅助 · 活动问答</div>
             </div>
           </div>
           <div class="header-actions">
             <el-tooltip content="清空当前会话" placement="bottom">
-              <el-button link class="action-btn" @click="clearMessages">
+              <el-button link class="action-btn" aria-label="清空当前会话" @click="clearMessages">
                 <el-icon :size="16"><Delete /></el-icon>
               </el-button>
             </el-tooltip>
             <el-tooltip content="收起抽屉" placement="bottom">
-              <el-button link class="action-btn" @click="drawerVisible = false">
+              <el-button link class="action-btn" aria-label="收起抽屉" @click="drawerVisible = false">
                 <el-icon :size="18"><Close /></el-icon>
               </el-button>
             </el-tooltip>
@@ -85,6 +86,7 @@
               <button
                 v-for="(item, idx) in quickQuestions"
                 :key="idx"
+                type="button"
                 class="sugg-chip"
                 @click="sendQuickQuestion(item)"
               >
@@ -104,10 +106,10 @@
 
             <!-- AI 助手回复消息 -->
             <div v-else class="message-row bot-row">
-              <div class="msg-avatar">🤖</div>
+              <div class="msg-avatar" aria-hidden="true">🤖</div>
               <div class="msg-bubble bot-bubble">
-                <div class="bubble-content" v-html="formatMessage(msg.content)"></div>
-                <span v-if="msg.loading" class="typing-cursor">▌</span>
+                <div class="bubble-content" v-safe-html="formatMessage(msg.content)"></div>
+                <span v-if="msg.loading" class="typing-cursor" aria-hidden="true">▌</span>
 
                 <!-- 意图识别业务直达卡片 -->
                 <div v-if="msg.card" class="action-card-widget">
@@ -139,14 +141,16 @@
         <!-- 抽屉底部输入区 (彻底拦截非滚动区滚轮事件，防背景穿透) -->
         <div class="drawer-footer" @wheel.prevent.stop>
           <div class="input-box-wrap">
+            <label for="ai-chat-input" class="visually-hidden">向 AI 社区百事通提问</label>
             <el-input
+              id="ai-chat-input"
               v-model="inputQuery"
               type="textarea"
               :rows="2"
               resize="none"
               placeholder="输入社区政策、办事、物业或报修问题... (Enter 发送)"
               :disabled="generating"
-              @keydown.enter.prevent="handleEnterPress"
+              @keydown.enter="handleEnterPress"
             />
             <div class="input-actions-bar">
               <span class="hint-text desktop-only">Shift + Enter 换行</span>
@@ -184,11 +188,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCommunityStore } from '@/stores/community'
 import { useUserStore } from '@/stores/user'
 import { streamAiChat, getAiChatHistory, clearAiChatHistory } from '@/api/ai'
+import { isImeComposing } from '@/utils/ime'
 import type { AiChatMessage, AiActionCard } from '@/types'
 import { ElMessage } from 'element-plus'
 import {
@@ -214,22 +219,6 @@ const inputQuery = ref('')
 const generating = ref(false)
 const messages = ref<AiChatMessage[]>([])
 const messagesScrollRef = ref<HTMLDivElement>()
-
-// 监听抽屉展开/收起，动态锁定 document 视口防止底层背景滚动穿透
-watch(drawerVisible, (visible) => {
-  if (visible) {
-    document.documentElement.classList.add('ai-drawer-locked')
-    document.body.classList.add('ai-drawer-locked')
-  } else {
-    document.documentElement.classList.remove('ai-drawer-locked')
-    document.body.classList.remove('ai-drawer-locked')
-  }
-})
-
-onBeforeUnmount(() => {
-  document.documentElement.classList.remove('ai-drawer-locked')
-  document.body.classList.remove('ai-drawer-locked')
-})
 
 // 历史会话分页状态 (向上滑动自动分页加载)
 const historyPage = ref(1)
@@ -414,8 +403,10 @@ function sendQuickQuestion(question: string) {
   submitQuestion()
 }
 
-function handleEnterPress(e: KeyboardEvent) {
-  if (e.shiftKey) return
+function handleEnterPress(e: Event) {
+  if (!(e instanceof KeyboardEvent)) return
+  if (e.shiftKey || isImeComposing(e)) return
+  e.preventDefault()
   submitQuestion()
 }
 
@@ -554,13 +545,19 @@ function scrollToBottom() {
   right: 28px;
   bottom: 28px;
   z-index: 999;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
   cursor: pointer;
   user-select: none;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.ai-floating-ball:hover {
-  transform: translateY(-4px) scale(1.05);
+@media (prefers-reduced-motion: no-preference) {
+  .ai-floating-ball:hover {
+    transform: translateY(-4px) scale(1.05);
+  }
 }
 
 /* 移动端 (<=900px): 悬浮球抬到底部 TabBar 上方, 避免遮挡"我的"等标签 */
@@ -594,9 +591,11 @@ function scrollToBottom() {
   letter-spacing: 0.5px;
 }
 
-/* 呼吸光环 */
-.has-pulse .ball-inner {
-  animation: pulse-ring 2.8s infinite;
+/* 呼吸光环：遵循 reduced-motion 偏好 */
+@media (prefers-reduced-motion: no-preference) {
+  .has-pulse .ball-inner {
+    animation: pulse-ring 2.8s infinite;
+  }
 }
 
 @keyframes pulse-ring {
@@ -729,7 +728,7 @@ function scrollToBottom() {
   gap: 6px;
   padding: 8px 0;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--cal-muted);
   user-select: none;
 }
 
@@ -834,14 +833,18 @@ function scrollToBottom() {
   font-size: 12.5px;
   color: #334155;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .sugg-chip:hover {
   background: #eff6ff;
   border-color: #bfdbfe;
   color: #1d4ed8;
-  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sugg-chip:hover {
+    transform: translateX(3px);
+  }
 }
 
 /* 业务直达卡片 */
@@ -943,7 +946,7 @@ function scrollToBottom() {
 
 .hint-text {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--cal-muted);
 }
 
 .send-btn {
@@ -954,7 +957,7 @@ function scrollToBottom() {
 
 .disclaimer {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--cal-muted);
   text-align: center;
   margin-top: 8px;
 }

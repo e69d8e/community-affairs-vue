@@ -2,7 +2,7 @@
   <div class="word-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">敏感词库与内容合规管理</h2>
+        <h1 class="page-title">敏感词库与内容合规管理</h1>
         <p class="page-sub">对居民发布的闲置、求助、邻里留言等内容进行实时合规检测与违规拦截</p>
       </div>
       <div class="header-actions">
@@ -22,22 +22,27 @@
         <el-radio-button value="垃圾广告">📢 垃圾广告</el-radio-button>
       </el-radio-group>
 
-      <div class="search-wrap">
+      <search class="search-wrap" aria-label="敏感词搜索">
+        <label for="word-manage-search" class="visually-hidden">搜索敏感词</label>
         <el-input
+          id="word-manage-search"
           v-model="searchKeyword"
+          type="search"
+          enterkeyhint="search"
           placeholder="搜索敏感词..."
-          :prefix-icon="Search"
+          :prefix-icon="SearchIcon"
           clearable
           style="width: 240px"
-          @keyup.enter="loadWords"
+          @keydown.enter="handleSearchEnter"
           @clear="loadWords"
         />
-        <el-button type="primary" :icon="Search" @click="loadWords">查询</el-button>
-      </div>
+        <el-button type="primary" :icon="SearchIcon" @click="loadWords">查询</el-button>
+      </search>
     </div>
 
     <!-- 词库表格 -->
     <div class="table-card card-hover">
+      <div class="table-scroll-region" tabindex="0" role="region" aria-label="敏感词库列表">
       <el-table v-loading="loading" :data="filteredWords" style="width: 100%">
         <el-table-column prop="id" label="ID" width="100" />
         <el-table-column prop="word" label="敏感词汇" min-width="160">
@@ -66,6 +71,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -122,9 +128,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, Search as SearchIcon } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
+import { isImeComposing } from '@/utils/ime'
+
+function handleSearchEnter(event: Event) {
+  if (isImeComposing(event)) return
+  loadWords()
+}
 
 const loading = ref(false)
 const words = ref<any[]>([])

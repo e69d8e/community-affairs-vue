@@ -3,7 +3,16 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          // Vue 全局注册了 @element-plus/icons-vue 的 Search 图标组件，声明原生 <search> 避免标签解析冲突
+          isCustomElement: (tag) => tag === 'search'
+        }
+      }
+    })
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')

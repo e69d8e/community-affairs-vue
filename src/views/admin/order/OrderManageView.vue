@@ -2,7 +2,7 @@
   <div class="order-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">报修与投诉工单调度中心</h2>
+        <h1 class="page-title">报修与投诉工单调度中心</h1>
         <p class="page-sub">负责工单初审、派单、施工跟进与完工验收管理</p>
       </div>
       <div class="header-actions">
@@ -40,38 +40,49 @@
 
     <!-- 工单数据表格 -->
     <div class="table-card card-hover">
+      <div class="table-scroll-region" tabindex="0" role="region" aria-label="工单调度列表">
       <el-table v-loading="loading" :data="orderList" style="width: 100%">
-        <el-table-column prop="orderNo" label="工单编号" width="140" />
-        <el-table-column label="类型" width="90">
+        <el-table-column prop="orderNo" label="工单编号" width="158" />
+        <el-table-column label="类型" width="72">
           <template #default="{ row }">
-            <el-tag :type="row.orderType === 1 ? 'primary' : 'warning'">
+            <el-tag :type="row.orderType === 1 ? 'primary' : 'warning'" size="small">
               {{ row.orderType === 1 ? '报修' : '投诉' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="紧急" width="80">
+        <el-table-column label="紧急" width="68">
           <template #default="{ row }">
             <el-tag v-if="row.isUrgent === 1" type="danger" effect="dark" size="small">加急</el-tag>
             <span v-else class="text-muted">普通</span>
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="事项摘要" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="reporterName" label="申报居民" width="100" />
-        <el-table-column prop="reporterPhone" label="联络电话" width="120" />
-        <el-table-column label="当前状态" width="110">
+        <el-table-column prop="title" label="事项摘要" min-width="170" show-overflow-tooltip />
+        <el-table-column label="申报居民" width="130">
           <template #default="{ row }">
-            <el-tag :type="getStatusTag(row.status)">
+            <div style="line-height: 1.35">
+              <div style="font-weight: 500; color: #0f172a">{{ row.reporterName || '-' }}</div>
+              <div v-if="row.reporterPhone" class="text-muted">{{ row.reporterPhone }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="当前状态" width="102">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTag(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="handlerName" label="处理师傅" width="110">
+        <el-table-column prop="handlerName" label="处理师傅" width="116" show-overflow-tooltip>
           <template #default="{ row }">
             <span>{{ row.handlerName || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="提交时间" width="160" />
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column prop="createTime" label="提交时间" width="142">
+          <template #default="{ row }">
+            <span>{{ (row.createTime || '').slice(0, 16) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="176">
           <template #default="{ row }">
             <el-button
               v-if="row.status === 1"
@@ -112,6 +123,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -301,7 +313,7 @@
           >
             <div class="log-title">
               <strong>{{ log.operatorName }}</strong>
-              <el-tag size="small" class="ml-2">{{ log.actionType }}</el-tag>
+              <el-tag size="small" :type="getActionTag(log.actionType)">{{ getActionLabel(log.actionType) }}</el-tag>
             </div>
             <div v-if="log.remark" class="log-remark">{{ log.remark }}</div>
           </el-timeline-item>
@@ -604,6 +616,34 @@ function getStatusTag(status: number) {
     default: return 'info'
   }
 }
+
+function getActionLabel(actionType?: string) {
+  switch (actionType) {
+    case 'SUBMIT': return '提交工单'
+    case 'REVIEW_PASS': return '初审通过并派单'
+    case 'REVIEW_REJECT': return '初审驳回'
+    case 'DISPATCH': return '重新派单'
+    case 'START_HANDLE': return '师傅接单施工'
+    case 'COMPLETE': return '维保完工待验'
+    case 'EVALUATE': return '居民好评结单'
+    case 'AUTO_EVALUATE': return '系统超时自动好评'
+    default: return actionType || '节点流转'
+  }
+}
+
+function getActionTag(actionType?: string) {
+  switch (actionType) {
+    case 'SUBMIT': return 'info'
+    case 'REVIEW_PASS':
+    case 'DISPATCH': return 'primary'
+    case 'START_HANDLE': return 'warning'
+    case 'COMPLETE':
+    case 'EVALUATE':
+    case 'AUTO_EVALUATE': return 'success'
+    case 'REVIEW_REJECT': return 'danger'
+    default: return 'info'
+  }
+}
 </script>
 
 <style scoped>
@@ -685,6 +725,10 @@ function getStatusTag(status: number) {
 }
 
 .log-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: 13px;
   color: #1e293b;
 }

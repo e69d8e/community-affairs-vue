@@ -35,44 +35,56 @@
       </div>
 
       <div class="secondary-filter">
-        <div class="status-tabs">
-          <span
+        <div class="status-tabs" role="group" aria-label="集市状态筛选">
+          <button
+            type="button"
             :class="['status-tab-item', { active: filterStatus === 0 }]"
+            :aria-pressed="filterStatus === 0"
             @click="setStatusFilter(0)"
           >
             全部状态
-          </span>
-          <span
+          </button>
+          <button
+            type="button"
             :class="['status-tab-item', { active: filterStatus === 1 }]"
+            :aria-pressed="filterStatus === 1"
             @click="setStatusFilter(1)"
           >
             展示中
-          </span>
-          <span
+          </button>
+          <button
+            type="button"
             :class="['status-tab-item', { active: filterStatus === 2 }]"
+            :aria-pressed="filterStatus === 2"
             @click="setStatusFilter(2)"
           >
             流转沟通中
-          </span>
-          <span
+          </button>
+          <button
+            type="button"
             :class="['status-tab-item', { active: filterStatus === 3 }]"
+            :aria-pressed="filterStatus === 3"
             @click="setStatusFilter(3)"
           >
             已达成结题
-          </span>
+          </button>
         </div>
 
-        <div class="search-box">
+        <search class="search-box" aria-label="邻里集市搜索">
+          <label for="market-search-input" class="visually-hidden">搜索物品名称或关键词</label>
           <el-input
+            id="market-search-input"
             v-model="searchKeyword"
+            type="search"
+            enterkeyhint="search"
             placeholder="搜索物品名称、关键词..."
-            :prefix-icon="Search"
+            :prefix-icon="SearchIcon"
             clearable
             style="width: 260px"
-            @keyup.enter="resetAndLoad"
+            @keydown.enter="handleSearchEnter"
             @clear="loadPosts"
           />
-        </div>
+        </search>
       </div>
     </div>
 
@@ -91,6 +103,8 @@
         <div class="card-cover">
           <img
             :src="getFirstImage(item.images)"
+            :alt="item.title"
+            loading="lazy"
             class="cover-image"
           />
           <span :class="['type-tag', `type-${item.postType}`]">
@@ -104,7 +118,7 @@
         <div class="card-content">
           <div class="price-row">
             <template v-if="item.postType === 1">
-              <span class="price-symbol">¥</span>
+              <span v-if="item.price > 0" class="price-symbol">¥</span>
               <span class="price-val">{{ item.price > 0 ? item.price : '免费赠送' }}</span>
               <span v-if="item.tradeType === 2" class="trade-hint">可小刀</span>
             </template>
@@ -118,42 +132,48 @@
             </template>
           </div>
 
-          <h3 class="post-title">{{ item.title }}</h3>
+          <h2 class="post-title">
+            <router-link :to="`/market/${item.id}`" class="post-title-link" @click.stop>
+              {{ item.title }}
+            </router-link>
+          </h2>
           <p class="post-desc">{{ item.description }}</p>
 
           <div class="author-row">
             <div class="author-info">
-              <el-avatar :size="24" :src="item.authorAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
+              <el-avatar :size="24" :src="item.authorAvatar || DEFAULT_AVATAR" />
               <span class="author-name">{{ item.authorName }}</span>
               <el-tag size="small" type="success" effect="plain" class="credit-badge">
                 信用 {{ item.authorCreditScore || 100 }}
               </el-tag>
             </div>
             <div class="stat-info">
-              <span
+              <button
+                type="button"
                 class="stat-like-btn"
                 :class="{ 'is-liked': item.hasLiked }"
-                title="为邻里点赞"
+                :aria-pressed="!!item.hasLiked"
+                :aria-label="item.hasLiked ? '取消赞' : '为邻里点赞'"
                 @click.stop="handleQuickLike(item)"
               >
-                <span class="heart-icon">{{ item.hasLiked ? '❤️' : '🤍' }}</span>
+                <span class="heart-icon" aria-hidden="true">{{ item.hasLiked ? '❤️' : '🤍' }}</span>
                 <span class="like-num">{{ item.likeCount || 0 }}</span>
-              </span>
-              <span title="留言数">💬 {{ item.commentCount || 0 }}</span>
+              </button>
+              <span aria-label="留言数">💬 {{ item.commentCount || 0 }}</span>
             </div>
           </div>
 
           <!-- 卡片底部就地快捷操作条 -->
           <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; display: flex; align-items: center; justify-content: space-between" @click.stop>
             <template v-if="userStore.isLoggedIn && String(userStore.user?.id) === String(item.userId)">
-              <span style="font-size: 11px; color: #059669; font-weight: 600">我发布的帖子</span>
+              <span style="font-size: 11px; color: #047857; font-weight: 600">我发布的帖子</span>
               <div style="display: flex; gap: 6px">
                 <el-button
                   v-if="item.status !== 3"
                   size="small"
                   type="success"
                   plain
-                  style="height: 26px; padding: 0 8px; font-size: 12px"
+                  style="min-height: 28px; padding: 2px 8px; font-size: 12px"
                   @click="handleCardQuickStatus(item, 3)"
                 >
                   ✓ 标为已结题
@@ -163,7 +183,7 @@
                   size="small"
                   type="primary"
                   plain
-                  style="height: 26px; padding: 0 8px; font-size: 12px"
+                  style="min-height: 28px; padding: 2px 8px; font-size: 12px"
                   @click="handleCardQuickStatus(item, 1)"
                 >
                   重新上架
@@ -171,13 +191,13 @@
               </div>
             </template>
             <template v-else>
-              <span style="font-size: 12px; color: #64748b">
+              <span style="font-size: 12px; color: #475569">
                 {{ item.deliveryType === 1 ? '📍 楼下自提' : '🚚 送货上门' }}
               </span>
               <el-button
                 size="small"
-                 plain
-                style="height: 26px; padding: 0 10px; font-size: 12px; border-radius: 999px"
+                plain
+                style="min-height: 28px; padding: 2px 10px; font-size: 12px; border-radius: 999px"
                 @click="openQuickChat(item)"
               >
                 💬 私信沟通
@@ -377,7 +397,7 @@
           @click="router.push(`/market/${item.id}`); showMyPostsModal = false"
         >
           <div class="m-card-cover">
-            <img :src="getFirstImage(item.images)" class="m-cover-img" />
+            <img :src="getFirstImage(item.images)" :alt="item.title" loading="lazy" class="m-cover-img" />
           </div>
           <div class="m-card-info">
             <div class="m-info-top">
@@ -386,7 +406,7 @@
                 {{ item.status === 1 ? '展示中' : (item.status === 2 ? '流转中' : '已结题') }}
               </span>
             </div>
-            <h4 class="m-post-title">{{ item.title }}</h4>
+            <h3 class="m-post-title">{{ item.title }}</h3>
             <p class="m-post-desc">{{ item.description }}</p>
             <div class="m-info-bottom">
               <span class="m-price">¥ {{ item.price > 0 ? item.price : '免费赠送' }}</span>
@@ -402,9 +422,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Plus, Search, Crop, Close } from '@element-plus/icons-vue'
+import { Plus, Search as SearchIcon, Crop, Close } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import request from '@/utils/request'
+import { DEFAULT_AVATAR, DEFAULT_COVER } from '@/constants/defaults'
+import { isImeComposing } from '@/utils/ime'
 import { useUserStore } from '@/stores/user'
 import { usePublicCommunityParam } from '@/composables/usePublicCommunityParam'
 import ImageCropperModal from '@/components/common/ImageCropperModal.vue'
@@ -415,6 +437,11 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const { communityParam: publicCommunityParam, initGuestCommunity } = usePublicCommunityParam()
+
+function handleSearchEnter(event: Event) {
+  if (isImeComposing(event)) return
+  resetAndLoad()
+}
 
 const loading = ref(false)
 const publishing = ref(false)
@@ -688,14 +715,14 @@ async function submitPublish() {
 }
 
 function getFirstImage(imagesJson?: string) {
-  if (!imagesJson) return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  if (!imagesJson) return DEFAULT_COVER
   try {
     const arr = JSON.parse(imagesJson)
     if (Array.isArray(arr) && arr.length > 0) {
       return arr[0]
     }
   } catch (e) {}
-  return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'
+  return DEFAULT_COVER
 }
 
 function getPostTypeName(type: number) {
@@ -765,16 +792,23 @@ function getTradeTypeText(tradeType: number) {
 
 .status-tabs {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .status-tab-item {
+  font: inherit;
   font-size: 13px;
   color: var(--cal-muted);
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
-  padding: 4px 12px;
+  padding: 5px 12px;
+  min-height: 30px;
   border-radius: var(--radius-pill);
-  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .status-tab-item:hover {
@@ -784,8 +818,14 @@ function getTradeTypeText(tradeType: number) {
 .status-tab-item.active {
   color: var(--cal-ink);
   background: var(--cal-surface-card);
+  border-color: var(--cal-hairline);
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+@media (forced-colors: active) {
+  .status-tab-item.active {
+    border-color: Highlight;
+  }
 }
 
 .market-grid {
@@ -927,9 +967,18 @@ function getTradeTypeText(tradeType: number) {
   font-weight: 700;
   color: #1e293b;
   margin-bottom: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.post-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.post-title-link:hover,
+.post-title-link:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .post-desc {
@@ -983,10 +1032,15 @@ function getTradeTypeText(tradeType: number) {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 6px;
+  padding: 3px 6px;
+  min-height: 24px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
   user-select: none;
 }
 .stat-like-btn:hover {
@@ -1137,6 +1191,13 @@ function getTradeTypeText(tradeType: number) {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+  }
+  .status-tabs {
+    gap: 6px;
+  }
+  .status-tab-item {
+    font-size: 12.5px;
+    padding: 5px 10px;
   }
   .search-box,
   .search-box .el-input {

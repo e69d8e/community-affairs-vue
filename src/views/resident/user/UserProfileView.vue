@@ -1,17 +1,23 @@
 <template>
   <div class="user-profile-layout">
+    <h1 class="visually-hidden">居民个人中心与我的事务</h1>
     <!-- ==================== 左侧：个人身份名片 + 分组垂直导航 ==================== -->
     <aside class="profile-sidebar">
       <!-- 个人身份紧凑名片 -->
       <div class="identity-card cal-mockup-card">
         <div class="identity-top">
-          <div class="avatar-edit-box" title="点击更换头像" @click="showAvatarCropper = true">
+          <button
+            type="button"
+            class="avatar-edit-box"
+            aria-label="点击更换头像"
+            @click="showAvatarCropper = true"
+          >
             <el-avatar :size="68" :src="userStore.user?.avatar || defaultAvatar" />
-            <div class="avatar-mask">
-              <el-icon><Camera /></el-icon>
+            <span class="avatar-mask">
+              <el-icon aria-hidden="true"><Camera /></el-icon>
               <span>换头像</span>
-            </div>
-          </div>
+            </span>
+          </button>
 
           <div class="identity-meta">
             <div class="name-line">
@@ -19,19 +25,20 @@
               <span class="cal-badge cal-badge-emerald role-pill">
                 {{ getRoleName(userStore.user?.role) }}
               </span>
-              <button
-                type="button"
-                class="identity-logout-pill"
-                title="安全退出登录"
-                @click="handleLogout"
-              >
-                <el-icon><SwitchButton /></el-icon>
-                <span>退出</span>
-              </button>
             </div>
             <p class="username-text">@{{ userStore.user?.username }} · {{ userStore.user?.phone || '未绑手机' }}</p>
             <p class="reg-time-text">注册于 {{ formatRegDate(userStore.user?.createTime) }}</p>
           </div>
+
+          <button
+            type="button"
+            class="identity-logout-pill"
+            title="安全退出登录"
+            @click="handleLogout"
+          >
+            <el-icon><SwitchButton /></el-icon>
+            <span>退出</span>
+          </button>
         </div>
 
         <!-- 信用积分荣誉条 -->
@@ -61,32 +68,35 @@
       </div>
 
       <!-- 分组垂直导航菜单 -->
-      <nav class="sidebar-nav cal-mockup-card">
+      <nav class="sidebar-nav cal-mockup-card" aria-label="个人中心功能导航">
         <div class="nav-group">
           <div class="nav-group-label">账户与房产</div>
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'overview' }]"
+            :aria-current="activeTab === 'overview' ? 'page' : undefined"
             @click="switchTab('overview')"
           >
-            <el-icon><User /></el-icon>
+            <el-icon aria-hidden="true"><User /></el-icon>
             <span class="nav-text">个人概览与资料</span>
           </button>
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'houses' }]"
+            :aria-current="activeTab === 'houses' ? 'page' : undefined"
             @click="switchTab('houses')"
           >
-            <el-icon><OfficeBuilding /></el-icon>
+            <el-icon aria-hidden="true"><OfficeBuilding /></el-icon>
             <span class="nav-text">我的房产与认证</span>
             <span v-if="myHouses.length > 0" class="nav-badge">{{ myHouses.length }}</span>
           </button>
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'security' }]"
+            :aria-current="activeTab === 'security' ? 'page' : undefined"
             @click="switchTab('security')"
           >
-            <el-icon><Lock /></el-icon>
+            <el-icon aria-hidden="true"><Lock /></el-icon>
             <span class="nav-text">账号与密码安全</span>
           </button>
         </div>
@@ -96,9 +106,10 @@
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'orders' }]"
+            :aria-current="activeTab === 'orders' ? 'page' : undefined"
             @click="switchTab('orders')"
           >
-            <el-icon><Tools /></el-icon>
+            <el-icon aria-hidden="true"><Tools /></el-icon>
             <span class="nav-text">报修与诉求工单</span>
             <span v-if="pendingEvalOrdersCount > 0" class="nav-badge badge-amber">
               {{ pendingEvalOrdersCount }} 待评
@@ -108,9 +119,10 @@
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'tickets' }]"
+            :aria-current="activeTab === 'tickets' ? 'page' : undefined"
             @click="switchTab('tickets')"
           >
-            <el-icon><Ticket /></el-icon>
+            <el-icon aria-hidden="true"><Ticket /></el-icon>
             <span class="nav-text">活动入场凭证</span>
             <span v-if="pendingTickets.length > 0" class="nav-badge badge-emerald">
               {{ pendingTickets.length }} 待验
@@ -120,9 +132,10 @@
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'market' }]"
+            :aria-current="activeTab === 'market' ? 'page' : undefined"
             @click="switchTab('market')"
           >
-            <el-icon><Goods /></el-icon>
+            <el-icon aria-hidden="true"><Goods /></el-icon>
             <span class="nav-text">我发布的闲置</span>
             <span v-if="myPostsTotal > 0" class="nav-badge">{{ myPostsTotal }}</span>
           </button>
@@ -133,18 +146,20 @@
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'chat' }]"
+            :aria-current="activeTab === 'chat' ? 'page' : undefined"
             @click="switchTab('chat')"
           >
-            <el-icon><ChatDotRound /></el-icon>
+            <el-icon aria-hidden="true"><ChatDotRound /></el-icon>
             <span class="nav-text">邻里私信沟通</span>
             <span v-if="unreadChatCount > 0" class="nav-badge badge-danger">{{ unreadChatCount }}</span>
           </button>
           <button
             type="button"
             :class="['sidebar-nav-item', { active: activeTab === 'notices' }]"
+            :aria-current="activeTab === 'notices' ? 'page' : undefined"
             @click="switchTab('notices')"
           >
-            <el-icon><Bell /></el-icon>
+            <el-icon aria-hidden="true"><Bell /></el-icon>
             <span class="nav-text">消息通知信箱</span>
             <span v-if="noticeStore.unreadCount > 0" class="nav-badge badge-danger">{{ noticeStore.unreadCount }}</span>
           </button>
@@ -169,23 +184,23 @@
             </div>
           </div>
 
-          <el-form class="inline-profile-form" label-position="top">
+          <el-form class="inline-profile-form" label-position="top" @submit.prevent="saveProfile">
             <div class="profile-form-grid">
               <el-form-item label="真实姓名">
-                <el-input v-model="editForm.realName" placeholder="请填写真实姓名" />
+                <el-input v-model="editForm.realName" autocomplete="name" placeholder="请填写真实姓名" />
               </el-form-item>
               <el-form-item label="联系手机号码">
-                <el-input v-model="editForm.phone" placeholder="用于接收物业工单与活动通知" />
+                <el-input v-model="editForm.phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="用于接收物业工单与活动通知" />
               </el-form-item>
               <el-form-item label="登录账号 (不可改)">
-                <el-input :model-value="userStore.user?.username" disabled />
+                <el-input :model-value="userStore.user?.username" autocomplete="username" disabled />
               </el-form-item>
               <div class="inline-save-col">
                 <el-button
                   type="primary"
+                  native-type="submit"
                   :loading="savingProfile"
                   class="cal-primary-btn save-inline-btn"
-                  @click="saveProfile"
                 >
                   保存基本资料
                 </el-button>
@@ -196,53 +211,61 @@
 
         <!-- B. 个人事务全景指标磁贴 (点击直接在工作区切换) -->
         <div class="metrics-tiles-grid">
-          <div class="metric-tile" @click="switchTab('orders')">
-            <div class="tile-icon icon-blue"><el-icon><Tools /></el-icon></div>
-            <div class="tile-body">
-              <div class="tile-num">
-                <strong>{{ myOrdersTotal }}</strong>
-                <span>笔</span>
-              </div>
-              <div class="tile-label">报修诉求工单</div>
-            </div>
-            <span class="tile-action">管理 →</span>
-          </div>
+          <button type="button" class="metric-tile" @click="switchTab('orders')">
+            <span class="tile-icon icon-blue" aria-hidden="true"><el-icon><Tools /></el-icon></span>
+            <span class="tile-body">
+              <span class="tile-num-row">
+                <span class="tile-num">
+                  <strong>{{ myOrdersTotal }}</strong>
+                  <span>笔</span>
+                </span>
+                <span class="tile-action">管理 →</span>
+              </span>
+              <span class="tile-label">报修诉求工单</span>
+            </span>
+          </button>
 
-          <div class="metric-tile" @click="switchTab('tickets')">
-            <div class="tile-icon icon-amber"><el-icon><Ticket /></el-icon></div>
-            <div class="tile-body">
-              <div class="tile-num">
-                <strong>{{ mySignupsCount }}</strong>
-                <span>张</span>
-              </div>
-              <div class="tile-label">活动入场凭证</div>
-            </div>
-            <span class="tile-action">亮码 →</span>
-          </div>
+          <button type="button" class="metric-tile" @click="switchTab('tickets')">
+            <span class="tile-icon icon-amber" aria-hidden="true"><el-icon><Ticket /></el-icon></span>
+            <span class="tile-body">
+              <span class="tile-num-row">
+                <span class="tile-num">
+                  <strong>{{ mySignupsCount }}</strong>
+                  <span>张</span>
+                </span>
+                <span class="tile-action">亮码 →</span>
+              </span>
+              <span class="tile-label">活动入场凭证</span>
+            </span>
+          </button>
 
-          <div class="metric-tile" @click="switchTab('market')">
-            <div class="tile-icon icon-emerald"><el-icon><Goods /></el-icon></div>
-            <div class="tile-body">
-              <div class="tile-num">
-                <strong>{{ myPostsTotal }}</strong>
-                <span>件</span>
-              </div>
-              <div class="tile-label">我发布的闲置</div>
-            </div>
-            <span class="tile-action">管理 →</span>
-          </div>
+          <button type="button" class="metric-tile" @click="switchTab('market')">
+            <span class="tile-icon icon-emerald" aria-hidden="true"><el-icon><Goods /></el-icon></span>
+            <span class="tile-body">
+              <span class="tile-num-row">
+                <span class="tile-num">
+                  <strong>{{ myPostsTotal }}</strong>
+                  <span>件</span>
+                </span>
+                <span class="tile-action">管理 →</span>
+              </span>
+              <span class="tile-label">我发布的闲置</span>
+            </span>
+          </button>
 
-          <div class="metric-tile" @click="switchTab(unreadChatCount > 0 ? 'chat' : 'notices')">
-            <div class="tile-icon icon-violet"><el-icon><Bell /></el-icon></div>
-            <div class="tile-body">
-              <div class="tile-num">
-                <strong>{{ noticeStore.unreadCount + unreadChatCount }}</strong>
-                <span>条</span>
-              </div>
-              <div class="tile-label">未读通知与私信</div>
-            </div>
-            <span class="tile-action">查看 →</span>
-          </div>
+          <button type="button" class="metric-tile" @click="switchTab(unreadChatCount > 0 ? 'chat' : 'notices')">
+            <span class="tile-icon icon-violet" aria-hidden="true"><el-icon><Bell /></el-icon></span>
+            <span class="tile-body">
+              <span class="tile-num-row">
+                <span class="tile-num">
+                  <strong>{{ noticeStore.unreadCount + unreadChatCount }}</strong>
+                  <span>条</span>
+                </span>
+                <span class="tile-action">查看 →</span>
+              </span>
+              <span class="tile-label">未读通知与私信</span>
+            </span>
+          </button>
         </div>
 
         <!-- C. 待办与快捷操作提醒 (当场亮码 / 当场评星) -->
@@ -437,14 +460,14 @@
               <h4>居民基本信息</h4>
               <span class="sub-hint">更新您的实名身份与日常联络信息</span>
             </div>
-            <el-form label-position="top">
+            <el-form label-position="top" @submit.prevent="saveProfile">
               <el-form-item label="真实姓名">
-                <el-input v-model="editForm.realName" placeholder="请填写真实姓名" size="large" />
+                <el-input v-model="editForm.realName" autocomplete="name" placeholder="请填写真实姓名" size="large" />
               </el-form-item>
               <el-form-item label="联系手机号码">
-                <el-input v-model="editForm.phone" placeholder="用于工单回访与活动短信联络" size="large" />
+                <el-input v-model="editForm.phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="用于工单回访与活动短信联络" size="large" />
               </el-form-item>
-              <el-button type="primary" :loading="savingProfile" class="cal-primary-btn" @click="saveProfile">
+              <el-button type="primary" native-type="submit" :loading="savingProfile" class="cal-primary-btn">
                 保存资料修改
               </el-button>
             </el-form>
@@ -455,11 +478,12 @@
               <h4>修改登录密码</h4>
               <span class="sub-hint">修改成功后需使用新密码重新登录</span>
             </div>
-            <el-form label-position="top">
+            <el-form label-position="top" @submit.prevent="savePassword">
               <el-form-item label="当前旧密码">
                 <el-input
                   v-model="passwordForm.oldPassword"
                   type="password"
+                  autocomplete="current-password"
                   show-password
                   placeholder="请输入当前旧密码"
                   size="large"
@@ -469,12 +493,13 @@
                 <el-input
                   v-model="passwordForm.newPassword"
                   type="password"
+                  autocomplete="new-password"
                   show-password
                   placeholder="请输入至少 6 位新密码"
                   size="large"
                 />
               </el-form-item>
-              <el-button type="primary" :loading="savingPassword" class="cal-primary-btn" @click="savePassword">
+              <el-button type="primary" native-type="submit" :loading="savingPassword" class="cal-primary-btn">
                 确认修改密码
               </el-button>
             </el-form>
@@ -618,11 +643,11 @@
                 </div>
               </div>
             </div>
-            <div v-else class="cert-upload-trigger" @click="showCertCropper = true">
-              <el-icon :size="22"><Plus /></el-icon>
+            <button v-else type="button" class="cert-upload-trigger" @click="showCertCropper = true">
+              <el-icon :size="22" aria-hidden="true"><Plus /></el-icon>
               <span class="trigger-main">点击上传房产证或租赁合同照片</span>
               <span class="trigger-sub">支持拍照裁切，仅供网格员实名核验使用</span>
-            </div>
+            </button>
           </div>
         </el-form-item>
       </el-form>
@@ -645,6 +670,7 @@
         <div class="qt-qr-box">
           <img
             :src="quickZoomTicket.myQrCodeBase64 || quickZoomTicket.qrCodeUrl || ''"
+            alt="活动入场核销二维码"
             class="qt-qr-img"
           />
           <div class="qt-code">核销码：<strong>{{ quickZoomTicket.myVerifyCode || quickZoomTicket.verifyCode }}</strong></div>
@@ -725,9 +751,10 @@ import ProfileOrdersPanel from './components/ProfileOrdersPanel.vue'
 import ProfileTicketsPanel from './components/ProfileTicketsPanel.vue'
 import ProfileMarketPanel from './components/ProfileMarketPanel.vue'
 import ProfileChatPanel from './components/ProfileChatPanel.vue'
+import { DEFAULT_AVATAR } from '@/constants/defaults'
 import type { Building, Unit, House, UserNotice, WorkOrder } from '@/types'
 
-const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+const defaultAvatar = DEFAULT_AVATAR
 
 const router = useRouter()
 const route = useRoute()
@@ -1171,8 +1198,8 @@ function getNoticeActionHint(item: UserNotice) {
 
 .identity-top {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -1182,6 +1209,10 @@ function getNoticeActionHint(item: UserNotice) {
   overflow: hidden;
   cursor: pointer;
   flex-shrink: 0;
+  border: none;
+  padding: 0;
+  background: transparent;
+  display: block;
 }
 
 .avatar-mask {
@@ -1198,8 +1229,15 @@ function getNoticeActionHint(item: UserNotice) {
   transition: opacity 0.2s ease;
 }
 
-.avatar-edit-box:hover .avatar-mask {
+.avatar-edit-box:hover .avatar-mask,
+.avatar-edit-box:focus-visible .avatar-mask,
+.avatar-edit-box:focus-within .avatar-mask {
   opacity: 1;
+}
+@media (hover: none) {
+  .avatar-mask {
+    opacity: 0.88;
+  }
 }
 
 .identity-meta {
@@ -1450,6 +1488,9 @@ function getNoticeActionHint(item: UserNotice) {
 }
 
 .metric-tile {
+  width: 100%;
+  font: inherit;
+  text-align: left;
   background: var(--cal-canvas);
   border: 1px solid var(--cal-hairline);
   border-radius: 12px;
@@ -1458,7 +1499,7 @@ function getNoticeActionHint(item: UserNotice) {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .metric-tile:hover {
@@ -1484,8 +1525,16 @@ function getNoticeActionHint(item: UserNotice) {
 .icon-violet { background: #f5f3ff; color: #7c3aed; }
 
 .tile-body {
+  display: block;
   flex: 1;
   min-width: 0;
+}
+
+.tile-num-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .tile-num {
@@ -1507,14 +1556,19 @@ function getNoticeActionHint(item: UserNotice) {
 }
 
 .tile-label {
+  display: block;
   font-size: 12px;
   color: var(--cal-muted);
+  white-space: nowrap;
+  margin-top: 2px;
 }
 
 .tile-action {
   font-size: 11px;
   font-weight: 600;
   color: var(--cal-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* 待办提醒卡 */
@@ -1786,6 +1840,8 @@ function getNoticeActionHint(item: UserNotice) {
 }
 
 .cert-upload-trigger {
+  width: 100%;
+  font: inherit;
   border: 1px dashed var(--cal-hairline);
   border-radius: 10px;
   background: var(--cal-surface-soft);
@@ -1796,7 +1852,7 @@ function getNoticeActionHint(item: UserNotice) {
   gap: 4px;
   cursor: pointer;
   color: var(--cal-muted);
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .cert-upload-trigger:hover {
@@ -1949,8 +2005,13 @@ function getNoticeActionHint(item: UserNotice) {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
-  .sidebar-nav::-webkit-scrollbar {
-    display: none;
+  @supports not (scrollbar-width: none) {
+    .sidebar-nav {
+      scrollbar-width: auto;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+      display: none;
+    }
   }
   .nav-group {
     flex-direction: row;
@@ -2004,6 +2065,13 @@ function getNoticeActionHint(item: UserNotice) {
 }
 
 @media (max-width: 768px) {
+  .identity-card {
+    padding: 14px;
+  }
+  .identity-top {
+    margin-bottom: 12px;
+    gap: 10px;
+  }
   .reg-time-text,
   .identity-quick-btns {
     display: none;

@@ -27,28 +27,30 @@
             </el-empty>
           </div>
 
-          <div
+          <button
             v-for="s in chatSessions"
             :key="s.sessionId"
+            type="button"
             :class="['session-card', { active: currentSession?.sessionId === s.sessionId }]"
+            :aria-current="currentSession?.sessionId === s.sessionId ? 'true' : undefined"
             @click="selectSession(s, true)"
           >
-            <div class="session-avatar-col">
+            <span class="session-avatar-col">
               <el-avatar :size="40" :src="s.otherUserAvatar || defaultAvatar" />
               <span v-if="s.unreadCount > 0" class="session-badge">{{ s.unreadCount }}</span>
-            </div>
-            <div class="session-body-col">
-              <div class="session-top-line">
+            </span>
+            <span class="session-body-col">
+              <span class="session-top-line">
                 <span class="other-user-name">{{ s.otherUserName }}</span>
                 <span class="last-time">{{ formatChatTime(s.lastTime) }}</span>
-              </div>
-              <div class="post-related-tag">
+              </span>
+              <span class="post-related-tag">
                 <span class="post-type-mini">{{ getPostTypeName(s.postType) }}</span>
                 <span class="post-title-mini">{{ s.postTitle }}</span>
-              </div>
-              <div class="last-msg-preview">{{ s.lastMessage }}</div>
-            </div>
-          </div>
+              </span>
+              <span class="last-msg-preview">{{ s.lastMessage }}</span>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -136,14 +138,16 @@
 
           <!-- 底部输入框 -->
           <div class="chat-input-bar">
+            <label for="profile-chat-input" class="visually-hidden">输入私信内容</label>
             <el-input
+              id="profile-chat-input"
               v-model="chatInput"
               type="textarea"
               :rows="2"
               placeholder="请输入私信内容 (按 Enter 发送)..."
               maxlength="500"
               resize="none"
-              @keydown.enter.exact.prevent="sendChatMessage"
+              @keydown.enter.exact="handleChatEnter"
             />
             <div class="chat-send-actions">
               <span class="chat-guard-tip">自觉遵守邻里文明守约，友好沟通</span>
@@ -181,11 +185,19 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowRight, ChatDotRound } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { DEFAULT_AVATAR } from '@/constants/defaults'
+import { isImeComposing } from '@/utils/ime'
 import { useUserStore } from '@/stores/user'
 import { stompService } from '@/utils/websocket'
 import type { ChatSession, ChatMessage } from '@/types'
 
-const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+const defaultAvatar = DEFAULT_AVATAR
+
+function handleChatEnter(event: Event) {
+  if (isImeComposing(event)) return
+  event.preventDefault()
+  sendChatMessage()
+}
 
 const emit = defineEmits<{
   (e: 'unread-change'): void
@@ -432,13 +444,17 @@ defineExpose({
 }
 
 .session-card {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: transparent;
   display: flex;
   gap: 10px;
   padding: 10px;
   border-radius: 10px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .session-card:hover {
@@ -469,6 +485,7 @@ defineExpose({
 }
 
 .session-body-col {
+  display: block;
   flex: 1;
   min-width: 0;
 }
@@ -496,7 +513,7 @@ defineExpose({
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #059669;
+  color: #047857;
   margin-bottom: 3px;
 }
 
@@ -514,6 +531,7 @@ defineExpose({
 }
 
 .last-msg-preview {
+  display: block;
   font-size: 12px;
   color: var(--cal-muted);
   white-space: nowrap;

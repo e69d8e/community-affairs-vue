@@ -56,10 +56,15 @@
       >
         <div class="card-top-row">
           <div class="left-badges">
-            <span class="order-no-pill" title="点击复制工单编号" @click.stop="copyOrderNo(order.orderNo)">
+            <button
+              type="button"
+              class="order-no-pill"
+              :aria-label="`复制工单编号 ${order.orderNo}`"
+              @click.stop="copyOrderNo(order.orderNo)"
+            >
               #{{ order.orderNo }}
-              <el-icon :size="12"><CopyDocument /></el-icon>
-            </span>
+              <el-icon :size="12" aria-hidden="true"><CopyDocument /></el-icon>
+            </button>
             <span v-if="order.isUrgent === 1" class="cal-badge cal-badge-pink">紧急加急</span>
             <span class="cal-badge cal-badge-gray">
               {{ order.orderType === 1 ? '🛠️ 设施报修' : '📝 投诉建议' }}
@@ -71,7 +76,11 @@
           </span>
         </div>
 
-        <h4 class="order-title">{{ order.title }}</h4>
+        <h4 class="order-title">
+          <button type="button" class="order-title-btn" @click.stop="openOrderDrawer(order)">
+            {{ order.title }}
+          </button>
+        </h4>
         <p class="order-desc">{{ order.content }}</p>
 
         <div class="card-bottom-row">
@@ -487,10 +496,12 @@ defineExpose({
   background: var(--cal-surface-soft);
   border: 1px solid var(--cal-hairline);
   padding: 2px 8px;
+  min-height: 24px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
 }
 
 .order-no-pill:hover {
@@ -508,6 +519,21 @@ defineExpose({
   font-weight: 700;
   color: var(--cal-ink);
   margin-bottom: 6px;
+}
+.order-title-btn {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.order-title-btn:hover,
+.order-title-btn:focus-visible {
+  color: var(--cal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .order-desc {

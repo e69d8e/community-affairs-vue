@@ -43,27 +43,28 @@
       <!-- 消息列表 -->
       <div v-loading="loading" class="notify-body">
         <div v-if="notifications.length === 0 && !loading" class="notify-empty">
-          <span class="empty-icon">📭</span>
+          <span class="empty-icon" aria-hidden="true">📭</span>
           <p>暂无新消息通知</p>
         </div>
 
-        <div
+        <button
           v-for="item in notifications"
           :key="item.id"
+          type="button"
           :class="['notify-item', { 'is-unread': item.isRead === 0 }]"
           @click="handleItemClick(item)"
         >
-          <div class="notify-item-top">
-            <span v-if="item.isRead === 0" class="unread-dot" />
+          <span class="notify-item-top">
+            <span v-if="item.isRead === 0" class="unread-dot" aria-hidden="true" />
             <span class="notify-badge" :class="getBadgeClass(item.noticeType)">
               {{ getBadgeText(item.noticeType) }}
             </span>
             <span class="notify-time">{{ formatTime(item.createTime) }}</span>
-          </div>
+          </span>
 
-          <h4 class="notify-item-title">{{ item.title }}</h4>
-          <p class="notify-item-desc">{{ item.summary }}</p>
-        </div>
+          <span class="notify-item-title">{{ item.title }}</span>
+          <span class="notify-item-desc">{{ item.summary }}</span>
+        </button>
       </div>
 
       <!-- 弹窗底栏 -->
@@ -267,7 +268,7 @@ function getBadgeText(type?: string) {
   align-items: center;
   justify-content: center;
   padding: 36px 0;
-  color: #9ca3af;
+  color: var(--cal-muted, #5a6270);
 }
 
 .empty-icon {
@@ -276,10 +277,16 @@ function getBadgeText(type?: string) {
 }
 
 .notify-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: transparent;
+  border: none;
   padding: 12px 16px;
   border-bottom: 1px solid #f9fafb;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .notify-item:hover {
@@ -342,10 +349,11 @@ function getBadgeText(type?: string) {
 .notify-time {
   margin-left: auto;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--cal-muted, #5a6270);
 }
 
 .notify-item-title {
+  display: block;
   font-size: 13px;
   font-weight: 600;
   color: #1f2937;
@@ -356,8 +364,9 @@ function getBadgeText(type?: string) {
 }
 
 .notify-item-desc {
+  display: block;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--cal-muted, #5a6270);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;

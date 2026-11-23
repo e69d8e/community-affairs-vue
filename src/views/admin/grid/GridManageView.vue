@@ -2,7 +2,7 @@
   <div class="grid-manage-view">
     <div class="page-header">
       <div>
-        <h2 class="page-title">网格空间与房产认证管理</h2>
+        <h1 class="page-title">网格空间与房产认证管理</h1>
         <p class="page-sub">管理小区楼宇台账，审批居民实名认领房产与居住身份</p>
       </div>
     </div>
@@ -11,27 +11,56 @@
       <!-- 标签页 1：待审批房产认证申请 -->
       <el-tab-pane :label="`📋 居民房产认领审批 (${total})`" name="audit">
         <div class="toolbar">
-          <span class="tip-text">居民申请认证后，核实购房协议或租赁合同即可通过审核</span>
+          <div class="toolbar-left">
+            <el-radio-group v-model="certStatusFilter" size="small" @change="onStatusFilterChange">
+              <el-radio-button :value="0">待审核</el-radio-button>
+              <el-radio-button :value="1">已认证</el-radio-button>
+              <el-radio-button :value="2">已驳回</el-radio-button>
+              <el-radio-button value="all">全部记录</el-radio-button>
+            </el-radio-group>
+            <span class="tip-text">核实购房协议或租赁合同后，即可通过或驳回居民房产认证</span>
+          </div>
           <div class="toolbar-actions">
             <el-button type="primary" plain size="small" @click="activeTab = 'spatial'">
-              🏢 查看楼宇空间台账
+              <span class="btn-icon-gap">🏢</span>查看楼宇空间台账
             </el-button>
             <el-button :icon="Refresh" size="small" @click="loadPendingBindings">刷新列表</el-button>
           </div>
         </div>
 
+        <div class="table-scroll-region" tabindex="0" role="region" aria-label="房产认证审核列表">
         <el-table v-loading="loadingPending" :data="pendingList" style="width: 100%">
-          <el-table-column prop="id" label="申请编号" width="100" />
-          <el-table-column prop="userId" label="申请人ID" width="100" />
-          <el-table-column prop="houseId" label="房屋编号" width="100" />
+          <el-table-column label="申请人" min-width="150">
+            <template #default="{ row }">
+              <div class="applicant-cell">
+                <div class="applicant-name">{{ row.residentName || `用户#${row.userId}` }}</div>
+                <div v-if="row.residentPhone" class="applicant-sub">{{ row.residentPhone }}</div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="认领房屋地址" min-width="210">
+            <template #default="{ row }">
+              <div class="house-cell">
+                <span v-if="row.communityName" class="comm-mini-tag">{{ row.communityName }}</span>
+                <span class="house-addr">{{ row.houseAddress || `房屋#${row.houseId}` }}</span>
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column label="居住身份" width="110">
             <template #default="{ row }">
-              <el-tag :type="row.identityType === 1 ? 'primary' : 'info'">
+              <el-tag :type="row.identityType === 1 ? 'primary' : 'info'" size="small">
                 {{ getIdentityText(row.identityType) }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="佐证材料" width="120">
+          <el-table-column label="审核状态" width="110">
+            <template #default="{ row }">
+              <el-tag :type="getCertStatusTag(row.certStatus)" size="small">
+                {{ getCertStatusText(row.certStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="佐证材料" width="100">
             <template #default="{ row }">
               <el-image
                 v-if="row.certMaterial"
@@ -39,31 +68,40 @@
                 :preview-src-list="[row.certMaterial]"
                 preview-teleported
                 fit="cover"
-                style="width: 48px; height: 48px; border-radius: 6px; cursor: pointer"
+                style="width: 44px; height: 44px; border-radius: 6px; cursor: pointer"
               />
               <span v-else class="text-muted">无附件</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="申请时间" width="180" />
-          <el-table-column label="审批操作" min-width="160">
+          <el-table-column prop="createTime" label="申请时间" width="168" />
+          <el-table-column label="审批操作" width="176" fixed="right">
             <template #default="{ row }">
-              <el-button type="success" size="small" @click="handleAudit(row, 1)">
-                ✓ 通过认证
-              </el-button>
-              <el-button type="danger" plain size="small" @click="openRejectModal(row)">
-                驳回
-              </el-button>
+              <div v-if="row.certStatus === 0" class="audit-op-row">
+                <el-button type="success" size="small" @click="handleAudit(row, 1)">
+                  ✓ 通过认证
+                </el-button>
+                <el-button type="danger" plain size="small" @click="openRejectModal(row)">
+                  驳回
+                </el-button>
+              </div>
+              <div v-else class="audited-note">
+                <span v-if="row.certStatus === 2 && row.rejectReason" :title="row.rejectReason">
+                  已驳回：{{ row.rejectReason }}
+                </span>
+                <span v-else>已于 {{ (row.reviewTime || row.createTime || '').slice(0, 10) }} 审结</span>
+              </div>
             </template>
           </el-table-column>
           <template #empty>
             <div class="empty-audit-box">
-              <p>🎉 当前暂无待审批的居民房产认领申请</p>
+              <p>{{ certStatusFilter === 0 ? '🎉 当前暂无待审批的居民房产认领申请' : '暂无符合条件的房产认证记录' }}</p>
               <el-button type="primary" plain size="small" @click="activeTab = 'spatial'">
-                🏢 前往查看社区楼宇空间台账 →
+                <span class="btn-icon-gap">🏢</span>前往查看社区楼宇空间台账 →
               </el-button>
             </div>
           </template>
         </el-table>
+        </div>
 
         <div class="pagination-wrap">
           <el-pagination
@@ -88,8 +126,10 @@
                 <button
                   v-for="b in buildings"
                   :key="b.id"
+                  type="button"
                   class="spatial-pill"
                   :class="{ active: currentBuildingId === b.id }"
+                  :aria-pressed="currentBuildingId === b.id"
                   @click="selectBuilding(b.id)"
                 >
                   🏢 {{ b.buildingName }} ({{ b.buildingNo }}号楼)
@@ -103,8 +143,10 @@
                 <button
                   v-for="u in units"
                   :key="u.id"
+                  type="button"
                   class="spatial-pill unit-pill"
                   :class="{ active: currentUnitId === u.id }"
+                  :aria-pressed="currentUnitId === u.id"
                   @click="selectUnit(u.id)"
                 >
                   🚪 {{ u.unitName }}
@@ -202,6 +244,7 @@ const activeTab = ref('audit')
 // 待审列表
 const loadingPending = ref(false)
 const pendingList = ref<any[]>([])
+const certStatusFilter = ref<number | 'all'>(0)
 const page = ref(1)
 const size = ref(10)
 const total = ref(0)
@@ -240,6 +283,8 @@ const communityParam = computed(() =>
   userStore.isSystemAdmin ? communityStore.selectedCommunityId : undefined
 )
 watch(() => communityStore.selectedId, () => {
+  page.value = 1
+  loadPendingBindings()
   currentBuildingId.value = ''
   loadBuildings()
 })
@@ -249,12 +294,25 @@ onMounted(() => {
   loadBuildings()
 })
 
+function onStatusFilterChange() {
+  page.value = 1
+  loadPendingBindings()
+}
+
 async function loadPendingBindings() {
   loadingPending.value = true
   try {
-    const res: any = await request.get('/grid/admin/house-bind/list', {
-      params: { page: page.value, size: size.value }
-    })
+    const params: any = {
+      page: page.value,
+      size: size.value
+    }
+    if (certStatusFilter.value !== 'all') {
+      params.certStatus = certStatusFilter.value
+    }
+    if (communityParam.value) {
+      params.communityId = communityParam.value
+    }
+    const res: any = await request.get('/grid/admin/house-bind/list', { params })
     pendingList.value = res.records || []
     total.value = res.total || 0
   } finally {
@@ -337,6 +395,24 @@ function getIdentityText(type: number) {
     default: return '居民'
   }
 }
+
+function getCertStatusText(status?: number) {
+  switch (status) {
+    case 0: return '待审核'
+    case 1: return '已认证'
+    case 2: return '已驳回'
+    default: return '未知'
+  }
+}
+
+function getCertStatusTag(status?: number) {
+  switch (status) {
+    case 0: return 'warning'
+    case 1: return 'success'
+    case 2: return 'danger'
+    default: return 'info'
+  }
+}
 </script>
 
 <style scoped>
@@ -369,7 +445,78 @@ function getIdentityText(type: number) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-icon-gap {
+  margin-right: 5px;
+}
+
+.applicant-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.applicant-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.applicant-sub {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.house-cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.comm-mini-tag {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+}
+
+.house-addr {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.audit-op-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.audit-op-row :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+.audited-note {
+  font-size: 12px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tip-text {

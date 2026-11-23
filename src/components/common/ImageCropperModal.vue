@@ -10,31 +10,43 @@
     @closed="handleClosed"
   >
     <div class="cropper-container">
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        class="hidden-file-input"
+        @change="handleFileChange"
+      />
+
       <!-- 未选择文件时的上传引导区 -->
-      <div v-if="!imageSource" class="upload-dropzone" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
-        <input
-          ref="fileInputRef"
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/gif"
-          class="hidden-file-input"
-          @change="handleFileChange"
-        />
+      <button
+        v-if="!imageSource"
+        type="button"
+        class="upload-dropzone"
+        aria-label="选择本地图片或将图片拖拽至此处"
+        @click="triggerFileInput"
+        @dragover.prevent
+        @drop.prevent="handleDrop"
+      >
         <div class="dropzone-content">
-          <el-icon class="dropzone-icon"><UploadFilled /></el-icon>
+          <el-icon class="dropzone-icon" aria-hidden="true"><UploadFilled /></el-icon>
           <div class="dropzone-text">点击选择本地图片，或将图片拖拽至此处</div>
           <div class="dropzone-tip">支持 JPG、PNG、WEBP 格式，大小不超过 10MB</div>
         </div>
-      </div>
+      </button>
 
       <!-- 图片编辑与裁切主工作区 -->
       <div v-else class="cropper-workspace">
         <div class="canvas-wrapper" ref="wrapperRef">
           <canvas
             ref="canvasRef"
-            @mousedown="handleMouseDown"
-            @mousemove="handleMouseMove"
-            @mouseup="handleMouseUp"
-            @mouseleave="handleMouseUp"
+            width="460"
+            height="380"
+            aria-label="图片裁切画布，可拖拽选框调整范围"
+            @pointerdown="handlePointerDown"
+            @pointermove="handlePointerMove"
+            @pointerup="handlePointerUp"
+            @pointercancel="handlePointerUp"
             @wheel.prevent="handleWheel"
           />
           <div class="crop-hint">可拖拽选框或滚轮缩放调整</div>
@@ -472,15 +484,22 @@ function renderPreview() {
   }
 }
 
-// 鼠标操作手柄与移动
-function handleMouseDown(e: MouseEvent) {
+function getCanvasCoords(e: PointerEvent) {
   const rect = canvasRef.value?.getBoundingClientRect()
-  if (!rect) return
-  const mouseX = e.clientX - rect.left
-  const mouseY = e.clientY - rect.top
+  if (!rect || rect.width === 0 || rect.height === 0) return null
+  return {
+    x: ((e.clientX - rect.left) * CANVAS_WIDTH) / rect.width,
+    y: ((e.clientY - rect.top) * CANVAS_HEIGHT) / rect.height
+  }
+}
 
-  const handleMargin = 12
-  // 判断点击的是哪个把手
+// 统一 PointerEvent 操作手柄与移动（支持鼠标与移动端触控）
+function handlePointerDown(e: PointerEvent) {
+  const pos = getCanvasCoords(e)
+  if (!pos) return
+  const { x: mouseX, y: mouseY } = pos
+
+  const handleMargin = e.pointerType === 'touch' ? 22 : 12
   if (Math.hypot(mouseX - cropBox.x, mouseY - cropBox.y) < handleMargin) {
     dragMode.value = 'nw'
   } else if (Math.hypot(mouseX - (cropBox.x + cropBox.w), mouseY - cropBox.y) < handleMargin) {
@@ -508,16 +527,15 @@ function handleMouseDown(e: MouseEvent) {
   dragStart.boxY = cropBox.y
   dragStart.boxW = cropBox.w
   dragStart.boxH = cropBox.h
+  ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
 }
 
-function handleMouseMove(e: MouseEvent) {
+function handlePointerMove(e: PointerEvent) {
   if (!isDragging.value || dragMode.value === 'none') return
-  const rect = canvasRef.value?.getBoundingClientRect()
-  if (!rect) return
-  const mouseX = e.clientX - rect.left
-  const mouseY = e.clientY - rect.top
-  const dx = mouseX - dragStart.mouseX
-  const dy = mouseY - dragStart.mouseY
+  const pos = getCanvasCoords(e)
+  if (!pos) return
+  const dx = pos.x - dragStart.mouseX
+  const dy = pos.y - dragStart.mouseY
 
   if (dragMode.value === 'move') {
     let nx = dragStart.boxX + dx
@@ -533,11 +551,41 @@ function handleMouseMove(e: MouseEvent) {
     if (cropBox.y + nh > CANVAS_HEIGHT) nh = CANVAS_HEIGHT - cropBox.y
     cropBox.w = nw
     cropBox.h = currentRatio.value > 0 ? nw / currentRatio.value : nh
+  } else if (dragMode.value === 'ne') {
+    let nw = Math.max(60, dragStart.boxW + dx)
+    if (dragStart.boxX + nw > CANVAS_WIDTH) nw = CANVAS_WIDTH - dragStart.boxX
+    let nh = currentRatio.value > 0 ? nw / currentRatio.value : Math.max(60, dragStart.boxH - dy)
+    const ny = dragStart.boxY + dragStart.boxH - nh
+    if (ny >= 0) {
+      cropBox.y = ny
+      cropBox.w = nw
+      cropBox.h = nh
+    }
+  } else if (dragMode.value === 'sw') {
+    let nw = Math.max(60, dragStart.boxW - dx)
+    const nx = dragStart.boxX + dragStart.boxW - nw
+    let nh = currentRatio.value > 0 ? nw / currentRatio.value : Math.max(60, dragStart.boxH + dy)
+    if (nx >= 0 && dragStart.boxY + nh <= CANVAS_HEIGHT) {
+      cropBox.x = nx
+      cropBox.w = nw
+      cropBox.h = nh
+    }
+  } else if (dragMode.value === 'nw') {
+    let nw = Math.max(60, dragStart.boxW - dx)
+    const nx = dragStart.boxX + dragStart.boxW - nw
+    let nh = currentRatio.value > 0 ? nw / currentRatio.value : Math.max(60, dragStart.boxH - dy)
+    const ny = dragStart.boxY + dragStart.boxH - nh
+    if (nx >= 0 && ny >= 0) {
+      cropBox.x = nx
+      cropBox.y = ny
+      cropBox.w = nw
+      cropBox.h = nh
+    }
   }
   renderCanvas()
 }
 
-function handleMouseUp() {
+function handlePointerUp() {
   isDragging.value = false
   dragMode.value = 'none'
 }
@@ -612,6 +660,7 @@ defineExpose({
 .upload-dropzone {
   width: 100%;
   height: 380px;
+  font-family: inherit;
   border: 2px dashed #475569;
   border-radius: 12px;
   display: flex;
@@ -619,7 +668,7 @@ defineExpose({
   justify-content: center;
   cursor: pointer;
   background: #1e293b;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .upload-dropzone:hover {
   border-color: #38bdf8;
@@ -656,6 +705,7 @@ defineExpose({
 .canvas-wrapper {
   position: relative;
   width: 460px;
+  max-width: 100%;
   height: 380px;
   background: #0f172a;
   border-radius: 10px;
@@ -664,6 +714,9 @@ defineExpose({
 }
 .canvas-wrapper canvas {
   display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
   cursor: crosshair;
 }
 .crop-hint {
@@ -767,5 +820,24 @@ defineExpose({
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .cropper-container {
+    min-height: auto;
+  }
+  .upload-dropzone {
+    height: 240px;
+    padding: 16px;
+  }
+  .cropper-workspace {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .canvas-wrapper {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 460 / 380;
+  }
 }
 </style>
